@@ -1,0 +1,1 @@
+GitHub uzerinde index.html, src/cloud.js ve src/app.js dosyalarini degistirin. config.js dosyanizi DEGISTIRMEYIN. GitHub Pages yenilendikten sonra Ctrl+Shift+R ile tekrar acin. Drive bagla secenegine basin. Hata cikarsa Google Cloud proje numarasini Firebase Console > Project settings > Project number ile kar\u015f\u0131la\u015ft\u0131r\u0131n.
