@@ -32,3 +32,48 @@
 .advanced-config[open] summary{margin-bottom:10px}
 .advanced-config .cloud-form{margin-top:14px}
 @media(max-width:690px){.config-success{padding:14px}.setup-steps>div{padding:12px}.advanced-config .cloud-form{grid-template-columns:1fr}}
+
+/* v3.4: follow Word/EASA numbering levels and keep notes at paragraph level. */
+.legal-text .law-clause{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:start;column-gap:9px;row-gap:4px;margin:0 0 15px;min-width:0;scroll-margin-top:160px}
+.legal-text .law-clause .law-clause-label{font-family:Georgia,"Times New Roman",serif;color:#315368;font-size:15px;line-height:1.95;white-space:nowrap}
+.legal-text .law-clause .law-clause-content{min-width:0}
+.legal-text .law-clause .law-clause-content>p{margin:0;white-space:pre-wrap;line-height:1.95}
+.legal-text .law-clause.law-indent-1,.legal-text .law-text-indent.law-indent-1{margin-left:27px}
+.legal-text .law-clause.law-indent-2,.legal-text .law-text-indent.law-indent-2{margin-left:54px}
+.legal-text .law-clause.law-indent-3,.legal-text .law-text-indent.law-indent-3{margin-left:81px}
+.legal-text .law-clause.law-indent-4,.legal-text .law-text-indent.law-indent-4{margin-left:108px}
+.legal-text .law-clause.law-indent-5,.legal-text .law-text-indent.law-indent-5{margin-left:135px}
+.legal-text .law-clause-note-button{display:inline-flex;align-items:center;gap:4px;border:1px solid transparent;border-radius:7px;padding:5px 7px;color:#7c919c;background:transparent;white-space:nowrap;font-family:Inter,"Segoe UI",sans-serif;font-size:10.5px;font-weight:700;margin-top:3px}
+.legal-text .law-clause-note-button:hover,.legal-text .law-clause-note-button:focus-visible{color:var(--teal);background:#eef8f5;border-color:#cbe5de}
+.legal-text .law-clause-note-button.is-noted{color:#15766d;background:#eaf6f3;border-color:#d2e7e2}
+.legal-text .law-clause-note-preview{display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;background:#f1f8f6;border-left:3px solid #72baad;border-radius:4px;padding:7px 10px;margin:8px 0 0;font-family:Inter,"Segoe UI",sans-serif;font-size:11.5px;line-height:1.5;color:#3b6c67;white-space:pre-wrap;overflow-wrap:anywhere}
+.legal-text .law-clause-note-preview .icon{margin-top:2px}
+.legal-text .law-clause-editor{font-family:Inter,"Segoe UI",sans-serif;margin:11px 0 5px;background:#f8fbfc;border:1px solid #d8e7e4;border-radius:9px;padding:12px}
+.legal-text .law-clause-editor .clause-editor-label{display:block;font-family:Inter,"Segoe UI",sans-serif;font-size:12px;font-weight:800;color:#34565a;margin-bottom:8px}
+.legal-text .law-clause-editor textarea{resize:vertical;min-height:90px;line-height:1.6}
+.clause-editor-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:9px}
+.clause-editor-actions .inline-hint{margin-right:auto}
+.orphan-notes{margin-top:15px;background:#fff8f1;border:1px solid #f1dcc4;border-radius:9px;padding:15px;font-family:Inter,"Segoe UI",sans-serif}
+.orphan-notes p{font-size:12px;color:#886640;line-height:1.6}
+.orphan-note-item{margin-top:12px;border-top:1px solid #f0dfc9;padding-top:9px;display:grid;gap:7px;line-height:1.5;font-size:12px;overflow-wrap:anywhere}
+.orphan-note-item .law-clause-editor{background:#fff}
+.subnote-summary{margin-top:11px;padding:11px;background:#f0f8f6;border-radius:8px;color:#416d68;font-size:11.5px;line-height:1.6}
+.subnote-summary>div{margin-top:6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.subnote-summary>div>span{font-weight:800;color:#2c5e56;margin-right:5px}
+@media(max-width:690px){
+ .legal-text .law-clause{grid-template-columns:30px minmax(0,1fr) auto;column-gap:5px}
+ .legal-text .law-clause .law-clause-label{font-size:14px}
+ .legal-text .law-clause.law-indent-1,.legal-text .law-text-indent.law-indent-1{margin-left:14px}
+ .legal-text .law-clause.law-indent-2,.legal-text .law-text-indent.law-indent-2{margin-left:28px}
+ .legal-text .law-clause.law-indent-3,.legal-text .law-text-indent.law-indent-3{margin-left:42px}
+ .legal-text .law-clause.law-indent-4,.legal-text .law-text-indent.law-indent-4{margin-left:56px}
+ .legal-text .law-clause.law-indent-5,.legal-text .law-text-indent.law-indent-5{margin-left:70px}
+ .legal-text .law-clause-note-button{padding:5px 4px}
+ .legal-text .law-clause-note-button span{display:none}
+ .law-clause .clause-editor-actions .inline-hint{display:none}
+}
+@media print{.law-clause-note-button,.law-clause-note-preview,.law-clause-editor,.orphan-notes{display:none!important}.legal-text .law-clause{grid-template-columns:34px minmax(0,1fr);gap:5px;break-inside:avoid}}
+.hierarchy-hint{display:flex;align-items:flex-start;gap:7px;background:#fff8ed;border:1px solid #f0dfbe;border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.6;color:#805f2f;margin:10px 0 20px}
+.hierarchy-hint .icon{margin-top:2px;flex-shrink:0}
+@media(max-width:690px){.legal-text .law-clause-note-button{min-width:28px;min-height:30px;justify-content:center}}
+@media print{.hierarchy-hint{display:none!important}}

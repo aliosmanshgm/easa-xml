@@ -292,6 +292,33 @@
       throw e;
     }
   }
+  // Regenerate the searchable JSON from an archived original XML. The raw file
+  // remains untouched, and Firestore only points at the new processed file after
+  // the upload succeeds; a failed metadata update preserves the previous data.
+  async function reindexVersion(previous, parsedDoc, processedBinary, compressed, progress=()=>{}) {
+    ensureLogin();ensureDrive();
+    if (previous.versionId !== parsedDoc.versionId || previous.familyId !== parsedDoc.familyId)
+      throw Error('XML içeriği seçilen sürümle eşleşmiyor. Veri değişikliği yapılmadı.');
+    const folders=await getOrCreateFolders();
+    const binary=processedBinary instanceof Uint8Array?processedBinary:new Uint8Array(processedBinary);
+    const dataHash=await sha256(binary);
+    const name=[parsedDoc.familyId.slice(0,55),parsedDoc.published?.slice(0,10)||'date',parsedDoc.guid?.slice(0,8)||'id','structured_v4'].join('_');
+    const mime=compressed?'application/gzip':'application/json';
+    progress(1,'İşlenmiş mevzuat Google Drive’a yükleniyor…');
+    const uploaded=await uploadBlob(`${name}.json${compressed?'.gz':''}`,new Blob([binary],{type:mime}),mime,folders.dataId,n=>progress(5+Math.round(n*.85),'İşlenmiş veri yükleniyor…'));
+    const updated={...previous,dataFileId:uploaded.id,dataHash,dataBytes:binary.byteLength,dataCompressed:compressed,count:parsedDoc.records.length,stats:parsedDoc.stats,schema:4,reindexedAt:new Date().toISOString()};
+    try {
+      progress(92,'Firebase sürüm kaydı güvenli biçimde güncelleniyor…');
+      await modules.fs.setDoc(doc('releases',await sha256(previous.versionId)),updated,{merge:false});
+    } catch(e) {
+      try{await deleteDriveFile(uploaded.id);}catch(cleanError){console.warn('İşlenmiş geçici dosya silinemedi',cleanError);}
+      throw firestoreError(e);
+    }
+    progress(98,'Eski işlenmiş veri temizleniyor…');
+    try{if(previous.dataFileId&&previous.dataFileId!==uploaded.id)await deleteDriveFile(previous.dataFileId);}
+    catch(e){console.warn('Eski işlenmiş dosya silinemedi; yeni veri aktif',e);updated.cleanupWarning=true;}
+    progress(100,'Yeniden indeksleme tamamlandı.');return updated;
+  }
   async function removeVersion(row) {
     ensureLogin();ensureDrive();
     const id=await sha256(row.versionId);
@@ -303,5 +330,5 @@
   async function getFolderUrl() {
     ensureLogin();const d=await modules.fs.getDoc(doc('settings','driveFolder'));return folderUrl(d.data()?.rootId);
   }
-  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,sha256,uploadVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
+  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
 })(window);
