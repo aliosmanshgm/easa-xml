@@ -1,4 +1,4 @@
-/* EASA eRules Hub v3.1 – personal cloud repository.
+/* EASA eRules Hub v3.2 – personal cloud repository.
    GitHub Pages: static UI; Firebase Auth/Firestore: identities & metadata;
    Google Drive (drive.file): original XML and parsed/gzip version archives.
    OAuth access tokens are kept in memory only. No server secrets required.
@@ -144,19 +144,35 @@
   }
   async function checkDrive(res, prefix='Google Drive isteği') {
     if (res.ok) return res;
-    let message = '', reasons = '';
+    let message = '', reasons = '', projectNumber = '';
     try {
       const j = await res.json();
-      message = j.error?.message || j.error_description || '';
-      reasons = [j.error?.status, ...(j.error?.errors || []).map(e=>e.reason), ...(j.error?.details || []).map(d=>d.reason)].filter(Boolean).join(' ');
-    } catch (_) {message = await res.text().catch(()=> '');}
+      const e = j.error || {};
+      message = e.message || j.error_description || '';
+      const details = Array.isArray(e.details) ? e.details : [];
+      const errors = Array.isArray(e.errors) ? e.errors : [];
+      reasons = [e.status, ...errors.map(x=>x.reason), ...details.map(x=>x.reason)].filter(Boolean).join(' ');
+      const disabled = details.find(x => x.reason === 'SERVICE_DISABLED' && x.metadata?.service === 'drive.googleapis.com')
+        || details.find(x => x.reason === 'SERVICE_DISABLED');
+      const consumer = String(disabled?.metadata?.consumer || '');
+      const m = /projects\/(\d+)/.exec(consumer) || /\bproject\s+(\d{6,})\b/i.exec(message);
+      if (m) projectNumber = m[1];
+    } catch (_) {if (!message) message = await res.text().catch(()=> '');}
     if (res.status === 403 && /insufficient authentication scopes|insufficientAuthenticationScopes|ACCESS_TOKEN_SCOPE_INSUFFICIENT|insufficient scope/i.test(message + ' ' + reasons)) {
       resetDriveToken();
       throw missingDriveScopeError();
     }
-    if (res.status === 403 && /accessNotConfigured|API has not been used|SERVICE_DISABLED/i.test(message + ' ' + reasons))
-      throw Error('Google Drive API etkin değil. Google Cloud Console > APIs & Services içinde Google Drive API hizmetini etkinleştirin.');
-    throw Error(`${prefix} başarısız (HTTP ${res.status}): ${message || res.statusText}`);
+    if (res.status === 403 && /accessNotConfigured|API has not been used|SERVICE_DISABLED/i.test(message + ' ' + reasons)) {
+      resetDriveToken();
+      const err = Error('Google Drive, bu iste\u011fin ba\u011fl\u0131 oldu\u011fu Cloud projesinde API hizmetini devre d\u0131\u015f\u0131 g\u00f6r\u00fcyor.'
+        + (projectNumber ? ' \u0130stek proje numaras\u0131: ' + projectNumber + '.' : '')
+        + ' Firebase Project ID, Google Cloud proje numarasi ve OAuth uygulamas\u0131n\u0131n projesini kar\u015f\u0131la\u015ft\u0131r\u0131n. Google yan\u0131t\u0131: ' + (message || reasons));
+      err.code = 'EASA_DRIVE_SERVICE_DISABLED';
+      err.projectNumber = projectNumber;
+      err.googleMessage = message || reasons;
+      throw err;
+    }
+    throw Error(`${prefix} başarısız (HTTP ${res.status}): ${message || reasons || res.statusText}`);
   }
   function driveFilesQ(name, parent) {
     const n = String(name).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
