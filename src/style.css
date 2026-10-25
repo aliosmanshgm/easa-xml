@@ -77,3 +77,20 @@
 .hierarchy-hint .icon{margin-top:2px;flex-shrink:0}
 @media(max-width:690px){.legal-text .law-clause-note-button{min-width:28px;min-height:30px;justify-content:center}}
 @media print{.hierarchy-hint{display:none!important}}
+
+/* v3.5: visible navigation history and direct return to the parent rule. */
+.rule-history-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #d8e9e6;background:#f5fbfa;border-radius:10px;padding:9px 11px;margin:0 0 21px;font-family:Inter,"Segoe UI",sans-serif}
+.rule-history-buttons{display:flex;gap:7px;flex-shrink:0}
+.rule-history-buttons .btn{min-height:34px;font-size:12px}
+.rule-history-context{font-size:11.5px;color:#637f86;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.linked-rule-label{display:flex;align-items:center;gap:6px;color:#31746e;background:#e7f6f3;font-size:11px;font-weight:700;padding:9px 14px}
+.parent-rule-link{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#f5f8ff;border:1px solid #dae4f3;border-radius:9px;padding:10px 13px;margin:0 0 22px;font-family:Inter,"Segoe UI",sans-serif}
+.parent-rule-link>span{font-size:10px;color:#55789b;letter-spacing:.65px;font-weight:800}
+.parent-rule-button{white-space:normal;text-align:left;line-height:1.45}
+@media(max-width:690px){.rule-history-bar{align-items:stretch;gap:6px;padding:9px;margin-bottom:16px}.rule-history-buttons{width:100%}.rule-history-buttons>.btn{flex:1}.rule-history-context{width:100%;flex:auto;white-space:normal;line-height:1.35}.parent-rule-link{align-items:stretch}.parent-rule-button{width:100%}}
+@media print{.rule-history-bar,.parent-rule-link,.linked-rule-label{display:none!important}}
+/* Keep the return controls visible even inside a long AMC/GM text. */
+#readerDetail{scroll-margin-top:86px}
+.rule-history-bar{position:sticky;top:82px;z-index:12;box-shadow:0 3px 10px rgba(23,63,71,.04)}
+@media(max-width:960px){#readerDetail{scroll-margin-top:78px}.rule-history-bar{top:72px}}
+@media print{.rule-history-bar{position:static;box-shadow:none}}
