@@ -1,0 +1,10 @@
+EASA eRules Hub v3.3 - Cihazlar arasi otomatik Firebase baglantisi
+
+1) Bu paketteki index.html, src/app.js, src/style.css dosyalarini GitHub deposundaki ayni yollarla degistirin.
+2) Mevcut config.js, firestore.rules ve src/cloud.js dosyalarina dokunmayin.
+3) Uygulamayi daha once Firebase ayarlarini girdiginiz bilgisayarda acin.
+4) Hesap ve baglanti > config.js indir ile dolu config.js dosyasini olusturun.
+5) Bu dosyayi GitHub depo kokundeki config.js dosyasi ile degistirin.
+6) GitHub Pages guncellendikten sonra telefonunuzdan ayni adrese gidin; Google ile giris yapin.
+
+Mevzuatlar ve notlar silinmez. Google Drive yetkisini yeni cihazda yeniden vermeniz gerekebilir.

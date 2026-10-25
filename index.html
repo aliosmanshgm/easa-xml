@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#102137">
 <meta name="description" content="EASA eRules: GitHub Pages, Firebase ve Google Drive ile çalışan bulut tabanlı mevzuat kütüphanesi">
 <title>EASA eRules Hub | Bulut Mevzuat Kütüphanesi</title>
-<link rel="stylesheet" href="./src/style.css">
+<link rel="stylesheet" href="./src/style.css?v=3.3.0">
 </head>
 <body>
 <div class="app" id="app">
@@ -20,8 +20,8 @@
     <button class="nav-item" data-view="versions"><svg class="icon" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg>Sürüm yönetimi</button>
   </nav>
   <div class="nav-caption">Sistem</div>
-  <nav aria-label="Bulut ayarları"><button class="nav-item" data-view="settings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4 4l2 2m12 12 2 2M2 12h3m14 0h3"/></svg>Bulut bağlantısı ve ayarlar</button></nav>
-  <div class="sidebar-bottom"><div id="storageMessage"><span class="status-dot"></span>Bulut bağlantısı bekleniyor</div><div>GitHub Pages · Firebase · Drive</div><div>v3.2 · XML dosyaları koda gömülmez</div></div>
+  <nav aria-label="Bulut ayarları"><button class="nav-item" data-view="settings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4 4l2 2m12 12 2 2M2 12h3m14 0h3"/></svg>Hesap ve bağlantı</button></nav>
+  <div class="sidebar-bottom"><div id="storageMessage"><span class="status-dot"></span>Bulut bağlantısı bekleniyor</div><div>GitHub Pages · Firebase · Drive</div><div>v3.3 · XML dosyaları koda gömülmez</div></div>
 </aside>
 <div class="main"><header class="topbar"><div style="display:flex;align-items:center;gap:12px;min-width:0"><button class="btn icon-only mobile-toggle" id="menuButton" aria-label="Menüyü aç"><svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div class="crumbs" id="breadcrumbs">EASA eRules / <b>Mevzuat kütüphanesi</b></div></div><div class="top-right"><span id="cloudAccount" class="cloud-account" title="Google hesabı">Oturum açılmadı</span><button class="btn subtle cloud-action" id="driveButton" data-action="drive" hidden>Drive bağla</button><button class="btn subtle cloud-action" id="logoutButton" data-action="signout" hidden>Çıkış</button><button class="btn subtle cloud-action" id="authButton" data-action="signin">Google ile giriş</button><label class="top-search"><svg class="icon sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="topQuery" placeholder="Mevzuatlarda ara ↵" aria-label="Tüm mevzuatta hızlı ara"></label><button class="btn primary" data-action="upload"><svg class="icon" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>Yeni XML yükle</button></div></header><main class="screen" id="screen" aria-label="Mevzuat içeriği"></main></div>
 </div>
@@ -29,9 +29,19 @@
 <input id="backupFile" type="file" accept=".json,application/json" hidden>
 <div id="modalLayer" class="modal-layer" hidden><div class="modal" role="dialog" aria-modal="true" aria-label="İşlem penceresi" id="modalBody"></div></div>
 <div class="toast-area" id="toasts" role="status" aria-live="polite"></div>
-<script src="./config.js"></script>
+<script>
+/* Always fetch the latest shared Firebase Web App config. This is a tiny public
+   file, not a secret; a fresh URL avoids stale blank config on mobile devices. */
+window.EASA_CONFIG_READY = new Promise(resolve => {
+  const element = document.createElement('script');
+  element.src = './config.js?loaded=' + Date.now();
+  element.onload = () => resolve(true);
+  element.onerror = () => { console.warn('config.js yüklenemedi; yerel ayarlar kontrol edilecek.'); resolve(false); };
+  document.head.appendChild(element);
+});
+</script>
 <script src="./src/parser.js"></script>
-<script src="./src/cloud.js?v=3.2.0"></script>
-<script src="./src/app.js?v=3.2.0"></script>
+<script src="./src/cloud.js?v=3.3.0"></script>
+<script src="./src/app.js?v=3.3.0"></script>
 </body>
 </html>
