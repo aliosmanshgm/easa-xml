@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // IMPORTANT: Replace the owner email with the Google account that will use this app.
+    // Only that account can read/write its own catalog, notes and configuration.
+    function isOwner(uid) {
+      return request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email == 'OWNER_EMAIL_HERE@example.com'
+        && request.auth.token.email_verified == true;
+    }
+    match /users/{uid}/{doc=**} {
+      allow read, write: if isOwner(uid);
+    }
+  }
+}

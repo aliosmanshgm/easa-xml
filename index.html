@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102137">
+<meta name="description" content="EASA eRules: GitHub Pages, Firebase ve Google Drive ile çalışan bulut tabanlı mevzuat kütüphanesi">
+<title>EASA eRules Hub | Bulut Mevzuat Kütüphanesi</title>
+<link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+<div class="app" id="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><div class="brand-logo"><svg class="icon lg" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 11h6M9 16h6"/></svg></div><div><b>eRules Hub</b><small>EASA BULUT KÜTÜPHANESİ</small></div></div>
+  <div class="nav-caption">Çalışma alanı</div>
+  <nav aria-label="Ana gezinme">
+    <button class="nav-item active" data-view="library"><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h8M8 17h5"/></svg>Mevzuat kütüphanesi<span class="nav-badge" id="catalogTotal">0</span></button>
+    <button class="nav-item" data-view="search"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Tüm mevzuatta ara</button>
+    <button class="nav-item" data-view="bookmarks"><svg class="icon" viewBox="0 0 24 24"><path d="M5 4h14v17l-7-4-7 4z"/></svg>Yer imleri ve notlar<span class="nav-badge" id="bookmarksTotal">0</span></button>
+    <button class="nav-item" data-view="versions"><svg class="icon" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg>Sürüm yönetimi</button>
+  </nav>
+  <div class="nav-caption">Sistem</div>
+  <nav aria-label="Bulut ayarları"><button class="nav-item" data-view="settings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4 4l2 2m12 12 2 2M2 12h3m14 0h3"/></svg>Bulut bağlantısı ve ayarlar</button></nav>
+  <div class="sidebar-bottom"><div id="storageMessage"><span class="status-dot"></span>Bulut bağlantısı bekleniyor</div><div>GitHub Pages · Firebase · Drive</div><div>v3.0 · XML dosyaları koda gömülmez</div></div>
+</aside>
+<div class="main"><header class="topbar"><div style="display:flex;align-items:center;gap:12px;min-width:0"><button class="btn icon-only mobile-toggle" id="menuButton" aria-label="Menüyü aç"><svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div class="crumbs" id="breadcrumbs">EASA eRules / <b>Mevzuat kütüphanesi</b></div></div><div class="top-right"><span id="cloudAccount" class="cloud-account" title="Google hesabı">Oturum açılmadı</span><button class="btn subtle cloud-action" id="driveButton" data-action="drive" hidden>Drive bağla</button><button class="btn subtle cloud-action" id="logoutButton" data-action="signout" hidden>Çıkış</button><button class="btn subtle cloud-action" id="authButton" data-action="signin">Google ile giriş</button><label class="top-search"><svg class="icon sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="topQuery" placeholder="Mevzuatlarda ara ↵" aria-label="Tüm mevzuatta hızlı ara"></label><button class="btn primary" data-action="upload"><svg class="icon" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>Yeni XML yükle</button></div></header><main class="screen" id="screen" aria-label="Mevzuat içeriği"></main></div>
+</div>
+<input id="xmlFiles" type="file" accept=".xml,text/xml,application/xml" multiple hidden>
+<input id="backupFile" type="file" accept=".json,application/json" hidden>
+<div id="modalLayer" class="modal-layer" hidden><div class="modal" role="dialog" aria-modal="true" aria-label="İşlem penceresi" id="modalBody"></div></div>
+<div class="toast-area" id="toasts" role="status" aria-live="polite"></div>
+<script src="./config.js"></script>
+<script src="./src/parser.js"></script>
+<script src="./src/cloud.js"></script>
+<script src="./src/app.js"></script>
+</body>
+</html>
