@@ -132,6 +132,50 @@
     try {await modules.fs.setDoc(doc('annotations', id), {...annotation}, {merge: false});}
     catch(e) {throw firestoreError(e);}
   }
+  // v3.7 – small report definitions in Firestore; no XML text or exports are stored here.
+  // The Firestore owner-only /users/{uid}/{doc=**} rule already covers this collection.
+  async function listPublicationDrafts() {
+    ensureLogin();
+    try {
+      const snapshot=await modules.fs.getDocs(coll('publicationDrafts'));
+      return snapshot.docs.map(d=>({...d.data(), id:d.id}));
+    } catch(e) {throw firestoreError(e);}
+  }
+  function validDraftId(id){return typeof id==='string' && /^[a-zA-Z0-9_-]{16,100}$/.test(id);}
+  async function savePublicationDraft(data, expectedRevision=0) {
+    ensureLogin();
+    if(!data||!validDraftId(data.id))throw Error('Geçersiz rapor kayıt kimliği.');
+    if(!['draft','template'].includes(data.type))throw Error('Geçersiz kayıt türü.');
+    if(!data.familyId||!data.versionId||!Array.isArray(data.picks)||data.picks.length>350)
+      throw Error('Şablon kaynağı veya seçilen mevzuat maddeleri geçersiz.');
+    if(!data.title||data.title.length>180||String(data.subtitle||'').length>250)
+      throw Error('Şablon başlığı ve açıklamasını kontrol edin.');
+    const raw=new TextEncoder().encode(JSON.stringify(data));
+    if(raw.byteLength>780*1024)throw Error('Rapor taslağı Firestore için çok büyük. Seçimi daraltın.');
+    const ref=doc('publicationDrafts',data.id);
+    try {
+      return await modules.fs.runTransaction(firestore, async transaction=>{
+        const snap=await transaction.get(ref);
+        const old=snap.exists()?snap.data():null;
+        const revision=Number(old?.revision)||0;
+        if(revision!==Number(expectedRevision||0)){
+          const err=Error('Bu kayıt başka cihazda değişmiş veya silinmiş. Mevcut değişiklikleri korumak için “Farklı kaydet” seçeneğini kullanın.');
+          err.code='EASA_PUBLICATION_CONFLICT';throw err;
+        }
+        const now=new Date().toISOString();
+        const next={...data, schema:1, revision:revision+1,
+          createdAt:old?.createdAt||data.createdAt||now, updatedAt:now};
+        transaction.set(ref,next);
+        return next;
+      });
+    }catch(e){throw firestoreError(e);}
+  }
+  async function deletePublicationDraft(id) {
+    ensureLogin();
+    if(!validDraftId(id))throw Error('Geçersiz rapor kayıt kimliği.');
+    try{await modules.fs.deleteDoc(doc('publicationDrafts',id));}
+    catch(e){throw firestoreError(e);}
+  }
   async function driveFetch(url, options = {}) {
     ensureDrive();
     const hdr = new Headers(options.headers || {});
@@ -330,5 +374,5 @@
   async function getFolderUrl() {
     ensureLogin();const d=await modules.fs.getDoc(doc('settings','driveFolder'));return folderUrl(d.data()?.rootId);
   }
-  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
+  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
 })(window);
