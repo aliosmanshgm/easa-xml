@@ -104,12 +104,17 @@ function renderSettings(){
   const configured=EasaCloud.configured(cfg),u=EasaCloud.user();
   const fields=[['apiKey','Firebase API Key'],['authDomain','Auth Domain'],['projectId','Project ID'],['appId','App ID']]
     .map(([k,title])=>`<label class="cloud-label">${title}<input class="form-field" name="${k}" value="${esc(cfg[k]||'')}" placeholder="${esc(k==='authDomain'?'proje.firebaseapp.com':k)}" autocomplete="off" required></label>`).join('');
-  const common=uiPage('Hesap ve bağlantı','Google hesabınızla giriş yapın; mevzuatlarınız Firebase ve Google Drive üzerinden cihazlar arasında senkronize edilir.','BULUT HESABI');
+  // Keep the config export action visible regardless of whether settings are
+  // supplied by GitHub (published) or by the existing browser (local).
+  const configActions=configured
+    ? btn('config.js indir','export-config','primary','download') + btn('Kodunu kopyala','copy-config','','copy')
+    : '';
+  const common=uiPage('Hesap ve bağlantı','Google hesabınızla giriş yapın; mevzuatlarınız Firebase ve Google Drive üzerinden cihazlar arasında senkronize edilir.','BULUT HESABI',configActions);
   const setup=status.source==='published'?`
     <div class="section-heading"><h2>Firebase bağlantısı</h2><span class="chip green">GitHub üzerinden otomatik</span></div>
     <div class="config-success">${icon('check','lg')}<div><b>Hazır: bu cihazda Firebase bilgisi girmenize gerek yok.</b><br>
     <span>Proje: <code>${esc(cfg.projectId)}</code> · Kaynak: <code>config.js</code></span><br>
-    <span>Farklı bir telefonda ya da bilgisayarda aynı GitHub Pages adresini açıp Google hesabınızla giriş yapabilirsiniz.</span></div></div>
+    <span>Farklı bir telefonda ya da bilgisayarda aynı GitHub Pages adresini açıp Google hesabınızla giriş yapabilirsiniz. Bu durumda config.js dosyasını yeniden yüklemeniz gerekmez; üstteki "config.js indir" düğmesi isteğe bağlı yedek almak içindir.</span></div></div>
     ${status.different?`<div class="info-strip">${icon('info')}<div>Bu cihazda eski bir yerel proje ayarı da var. GitHub'daki yapılandırma öncelikli kullanılır. Geçerli proje <b>${esc(cfg.projectId)}</b>; yerel ayarlar veri silinmeden korunur.</div></div>`:''}
     <details class="advanced-config"><summary>Teknik bağlantı bilgileri</summary><p>Firebase Project ID: <code>${esc(cfg.projectId)}</code><br>
     Auth Domain: <code>${esc(cfg.authDomain)}</code></p><p>Bu bilgileri değiştirmek isterseniz GitHub deposunun kök dizinindeki <code>config.js</code> dosyasını güncelleyin. API anahtarlarını ve App ID'yi her cihazda tekrar girmeniz gerekmez.</p></details>`:
@@ -119,7 +124,7 @@ function renderSettings(){
     <div class="setup-steps"><div><b>1</b><span>Bu bilgisayardan <strong>config.js indir</strong> düğmesine basın. Dosya mevcut çalışan Firebase ayarlarınızı içerir.</span></div>
     <div><b>2</b><span>GitHub deposunun <strong>kök dizinindeki config.js</strong> dosyasını indirdiğiniz dosyayla değiştirip kaydedin. <code>src/</code> içine koymayın.</span></div>
     <div><b>3</b><span>GitHub Pages güncellendikten sonra telefondan aynı adresi açın. Artık yalnızca <strong>Google ile giriş</strong> yapmanız gerekir.</span></div></div>
-    <div class="settings-actions">${btn('config.js indir','export-config','primary','download')}${btn('Kodunu kopyala','copy-config','','copy')}</div>
+    <p class="inline-hint">Üstteki <strong>config.js indir</strong> düğmesi mevcut tarayıcı ayarlarınızdan dosyayı oluşturur; alternatif olarak <strong>Kodunu kopyala</strong> seçeneğini kullanabilirsiniz.</p>
     <p class="inline-hint">Firebase Web App yapılandırması gizli sunucu anahtarı değildir. Ancak Google OAuth client secret, erişim belirteci, parola veya servis hesabı anahtarı bu dosyaya eklenmemelidir.</p>
     <details class="advanced-config"><summary>Gelişmiş: bu cihazdaki Firebase bilgilerini düzenle</summary><form id="firebaseForm" class="cloud-form">${fields}<button class="btn primary" type="submit">Bu cihazda kaydet</button></form><p class="inline-hint">Bu alanlar yalnızca bu tarayıcıda saklanır. Diğer cihazlarda tekrar girmemek için yukarıdaki config.js aktarımını tamamlayın.</p></details>`:`
     <div class="section-heading"><h2>İlk bağlantı kurulumu</h2><span class="chip amber">Yapılandırma bulunamadı</span></div>
@@ -138,7 +143,7 @@ function renderSettings(){
       <p>${persistent?'Okunan mevzuatlar bu cihazda IndexedDB ile önbelleğe alınır.':'IndexedDB kullanılamıyor; okumak için Drive bağlantısı gerekebilir.'}</p>
       <span class="chip ${persistent?'green':'amber'}">${persistent?'Önbellek hazır':'Önbellek kapalı'}</span></section>
     <section class="panel"><div class="pub-icon">${icon('info')}</div><h3>Mevzuat kaynağı</h3>
-      <p>Yalnızca yüklediğiniz EASA eRules XML dosyaları gösterilir; yayımlanma ve uygulanabilirlik tarihleri ayrı izlenir.</p><span class="chip">v3.3 · GitHub + Firebase + Drive</span></section></div>
+      <p>Yalnızca yüklediğiniz EASA eRules XML dosyaları gösterilir; yayımlanma ve uygulanabilirlik tarihleri ayrı izlenir.</p><span class="chip">v3.3.1 · GitHub + Firebase + Drive</span></section></div>
     <section class="panel cloud-config-panel">${setup}</section>
     <div class="info-strip">${icon('info')}<div>Orijinal XML'leriniz Google Drive'da, mevzuat kayıtları ve notlarınız Firebase'de saklanır. Bu güncelleme mevcut verileri taşımaz veya silmez. Firebase bağlantı bilgileri herkese açık GitHub Pages üzerinden paylaşılacağı için erişim güvenliği Firestore kuralları ve Google hesap izinleriyle sağlanmalıdır.</div></div>`;
 }
@@ -179,7 +184,7 @@ function sharedConfigText(cfg){
   // Firebase Web App identifiers are public client-side configuration. Never
   // export OAuth tokens, passwords, OAuth client secrets or service-account keys.
   const publicConfig=Object.fromEntries(['apiKey','authDomain','projectId','appId'].map(k=>[k,String(cfg[k]).trim()]));
-  return '/* EASA eRules Hub v3.3 - paylaşılan Firebase Web App ayarları.\n'+
+  return '/* EASA eRules Hub v3.3.1 - paylaşılan Firebase Web App ayarları.\n'+
     '   GitHub Pages repo köküne config.js adıyla yükleyin.\n'+
     '   Bu dosyaya OAuth client secret, erişim belirteci veya servis hesabı anahtarı koymayın.\n*/\n'+
     'window.EASA_CONFIG = '+JSON.stringify(publicConfig,null,2)+';\n';
