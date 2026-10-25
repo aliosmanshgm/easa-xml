@@ -1,4 +1,4 @@
-/* EASA eRules Hub v3 – personal cloud repository.
+/* EASA eRules Hub v3.1 – personal cloud repository.
    GitHub Pages: static UI; Firebase Auth/Firestore: identities & metadata;
    Google Drive (drive.file): original XML and parsed/gzip version archives.
    OAuth access tokens are kept in memory only. No server secrets required.
@@ -19,7 +19,28 @@
       typeof config[k] === 'string' && config[k].trim() && !/YOUR_|PLACEHOLDER|BURAYA/i.test(config[k]));
   }
   function user() { return currentUser ? {uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName, photoURL: currentUser.photoURL} : null; }
+  // driveToken is populated only AFTER a successful Drive API preflight.
   function driveReady() { return !!(currentUser && driveToken && Date.now() - tokenIssued < 52 * 60 * 1000); }
+  function resetDriveToken() { driveToken = null; tokenIssued = 0; }
+  function missingDriveScopeError() {
+    const err = Error('Google Drive erişim izni eksik. Google Cloud Console > Google Auth Platform > Data Access bölümünde https://www.googleapis.com/auth/drive.file kapsamını ekleyip kaydedin. Ardından uygulamadaki “Drive bağla” ile Google izin ekranında Drive erişimini onaylayın.');
+    err.code = 'EASA_DRIVE_SCOPE_MISSING';
+    return err;
+  }
+  async function verifyDriveAccess(accessToken) {
+    // Use the actual Drive method, not tokeninfo (which would put a token in a URL).
+    // With drive.file, files.list can list files created or opened by this application.
+    const params = new URLSearchParams({pageSize:'1', fields:'files(id),nextPageToken'});
+    let response;
+    try {
+      response = await fetch(`${DRIVE_API}/files?${params}`, {
+        method:'GET', headers:{Authorization:`Bearer ${accessToken}`}, cache:'no-store'
+      });
+    } catch (e) {
+      throw Error('Google Drive izni doğrulanırken bağlantı kurulamadı. Drive API ve internet erişimini kontrol edin. ' + e.message);
+    }
+    await checkDrive(response, 'Google Drive OAuth yetki doğrulaması');
+  }
   function ensureLogin() { if (!currentUser || !firestore) throw Error('Önce Google hesabınızla oturum açın.'); }
   function ensureDrive() { ensureLogin(); if (!driveReady()) {driveToken = null; throw Error('Google Drive bağlantısı gerekli veya yetkinin süresi doldu. Üst menüden “Drive bağla” seçeneğini kullanın.');} }
   async function init(config, callback) {
@@ -54,14 +75,18 @@
     if (!initialized) throw Error('Önce Firebase bağlantısını yapılandırın.');
     const provider = new modules.au.GoogleAuthProvider();
     provider.addScope(DRIVE_SCOPE);
-    provider.setCustomParameters({prompt: 'select_account'});
+    // Existing Google sessions may otherwise reuse an older, narrower grant.
+    provider.setCustomParameters({prompt: 'consent select_account'});
     const prior = currentUser?.uid;
+    resetDriveToken();
     const result = await modules.au.signInWithPopup(auth, provider);
     const credential = modules.au.GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) throw Error('Google Drive için OAuth erişim izni alınamadı.');
+    currentUser = result.user;
+    if (!credential?.accessToken) throw missingDriveScopeError();
+    // Do not report "Drive connected" until Drive confirms the token's scope.
+    await verifyDriveAccess(credential.accessToken);
     driveToken = credential.accessToken;
     tokenIssued = Date.now();
-    currentUser = result.user;
     if (prior && prior !== currentUser.uid && onUserChanged) await onUserChanged(user());
     return user();
   }
@@ -119,10 +144,17 @@
   }
   async function checkDrive(res, prefix='Google Drive isteği') {
     if (res.ok) return res;
-    let message = '';
-    try {const j = await res.json();message = j.error?.message || j.error_description || '';}
-    catch (_) {message = await res.text().catch(()=> '');}
-    if (res.status === 403 && /accessNotConfigured|API has not been used|SERVICE_DISABLED/i.test(message))
+    let message = '', reasons = '';
+    try {
+      const j = await res.json();
+      message = j.error?.message || j.error_description || '';
+      reasons = [j.error?.status, ...(j.error?.errors || []).map(e=>e.reason), ...(j.error?.details || []).map(d=>d.reason)].filter(Boolean).join(' ');
+    } catch (_) {message = await res.text().catch(()=> '');}
+    if (res.status === 403 && /insufficient authentication scopes|insufficientAuthenticationScopes|ACCESS_TOKEN_SCOPE_INSUFFICIENT|insufficient scope/i.test(message + ' ' + reasons)) {
+      resetDriveToken();
+      throw missingDriveScopeError();
+    }
+    if (res.status === 403 && /accessNotConfigured|API has not been used|SERVICE_DISABLED/i.test(message + ' ' + reasons))
       throw Error('Google Drive API etkin değil. Google Cloud Console > APIs & Services içinde Google Drive API hizmetini etkinleştirin.');
     throw Error(`${prefix} başarısız (HTTP ${res.status}): ${message || res.statusText}`);
   }
