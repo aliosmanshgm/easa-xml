@@ -146,8 +146,36 @@
     ensureLogin();
     if(!data||!validDraftId(data.id))throw Error('Geçersiz rapor kayıt kimliği.');
     if(!['draft','template'].includes(data.type))throw Error('Geçersiz kayıt türü.');
-    if(!data.familyId||!data.versionId||!Array.isArray(data.picks)||data.picks.length>350)
+    if(!data.familyId||!data.versionId||!Array.isArray(data.picks)||!data.picks.length||data.picks.length>350)
       throw Error('Şablon kaynağı veya seçilen mevzuat maddeleri geçersiz.');
+    // v3.8: publication source identity is composite (familyId + pinned versionId + provision key).
+    // v3.7 definitions have no sources array: keep accepting them without alteration.
+    if(data.sources!==undefined){
+      if(!Array.isArray(data.sources)||!data.sources.length||data.sources.length>40)
+        throw Error('Derlemede en fazla 40 farklı kaynak sürüm bulunabilir.');
+      const refs=new Set();
+      for(const source of data.sources){
+        if(typeof source.familyId!=='string'||!source.familyId||typeof source.versionId!=='string'||!source.versionId)
+          throw Error('Geçersiz mevzuat kaynak kimliği.');
+        const id=JSON.stringify([source.familyId,source.versionId]);
+        if(refs.has(id))throw Error('Mevzuat kaynak sürümü listede tekrar ediyor.');
+        refs.add(id);
+      }
+      if(data.familyId!==data.sources[0].familyId||data.versionId!==data.sources[0].versionId)
+        throw Error('Birincil kaynak ile kaynak listesi uyuşmuyor.');
+      const picks=new Set();
+      for(const pick of data.picks){
+        const ref=JSON.stringify([pick.familyId,pick.versionId]);
+        if(!refs.has(ref)||typeof pick.key!=='string'||!pick.key)
+          throw Error('Seçili madde kaynak XML ile eşleşmiyor.');
+        const id=JSON.stringify([pick.familyId,pick.versionId,pick.key]);
+        if(picks.has(id))throw Error('Mevzuat maddesi birden fazla kez seçilmiş.');
+        picks.add(id);
+        if(pick.mode==='partial'&&(!Array.isArray(pick.anchors)||!pick.anchors.length))
+          throw Error('Alt gereklilik seçimi eksik.');
+      }
+      if(refs.size>picks.size)throw Error('Seçili maddesi olmayan kaynak kayıt edilemez.');
+    }
     if(!data.title||data.title.length>180||String(data.subtitle||'').length>250)
       throw Error('Şablon başlığı ve açıklamasını kontrol edin.');
     const raw=new TextEncoder().encode(JSON.stringify(data));
@@ -163,7 +191,7 @@
           err.code='EASA_PUBLICATION_CONFLICT';throw err;
         }
         const now=new Date().toISOString();
-        const next={...data, schema:1, revision:revision+1,
+        const next={...data, schema:data.sources?.length>1?2:1, revision:revision+1,
           createdAt:old?.createdAt||data.createdAt||now, updatedAt:now};
         transaction.set(ref,next);
         return next;
