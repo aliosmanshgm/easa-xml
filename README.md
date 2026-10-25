@@ -1,68 +1,62 @@
-# EASA eRules Hub v3.7 — Kayıtlı Derlemeler ve Rapor Şablonları
+# EASA eRules Hub v3.8 – Çoklu Mevzuatla Tematik Derleme
 
-Bu sürüm v3.6'nın **Mevzuat Derle & Dışa Aktar** modülüne, bulutta kaydedilebilen ve farklı cihazlarda tekrar açılabilen taslak/şablon yönetimini ekler.
+v3.7'nin kaydedilebilir derleme/şablon altyapısına, **birden fazla EASA yayın ailesinden ve sabitlenmiş XML sürümlerinden madde seçerek tek rapor oluşturma** özelliği eklenmiştir.
 
-## v3.6'dan geçiş
+## v3.7'den yükseltme
 
-`EASA_v3_7_Guncelleme.zip` arşivindeki dosyaları mevcut GitHub Pages deposunda **aynı yollarla** değiştirin:
+`EASA_v3_8_Guncelleme.zip` içindeki **beş dosyayı** GitHub Pages deposunda aynı yollarla değiştirin:
 
 | Dosya | İşlem |
 | --- | --- |
-| `index.html` | Değiştirin |
-| `src/app.js` | Değiştirin |
-| `src/cloud.js` | Değiştirin |
-| `src/publisher-ui.js` | Değiştirin |
-| `src/style.css` | Değiştirin |
+| `index.html` | Değiştirin (3.8.0 önbellek sürümü) |
+| `src/publisher-ui.js` | Değiştirin (çoklu seçimler / kaynak sepeti) |
+| `src/publications.js` | Değiştirin (çoklu kaynak çıktı motoru) |
+| `src/cloud.js` | Değiştirin (Firestore şablon kaynak doğrulaması) |
+| `src/style.css` | Değiştirin (masaüstü ve mobil kaynak sepeti) |
 
-**Dokunmayın:** `config.js`, `firestore.rules`, `src/parser.js`, `src/clauses.js`, `src/publications.js`, `src/vendor/` ve Google Drive'daki XML/işlenmiş veri dosyaları. Firebase projesinin ayarlarını yeniden girmeniz veya eski XML dosyalarını yeniden yüklemeniz gerekmez.
+**Dokunmayın:** `config.js`, `firestore.rules`, `src/app.js`, `src/parser.js`, `src/clauses.js` ve `src/vendor/` dosyaları. Mevcut XML kaynaklarını tekrar yüklemeyin. Yeni Firebase/Google Drive API yetkisi veya Firebase kural değişikliği gerekmez.
 
-GitHub Pages yayınlandıktan sonra sayfayı zorunlu yenileyin (`Ctrl+Shift+R`); telefonda sayfayı yeniden açın. Sol menüden **Yayın Oluşturucu** ekranına girin.
+GitHub Pages dağıtımı tamamlandıktan sonra masaüstünde `Ctrl+Shift+R` ile yenileyin. Mobilde aynı GitHub Pages sayfasını yeniden açın.
 
 ## Kullanım
 
-1. Mevzuat ve belirli XML sürümünü seçin. İstediğiniz maddeleri / alt gereklilikleri işaretleyin.
-2. Derleme başlığı ve açıklamasını, AMC/GM/CS ekleme tercihini, mevcut notları, not sayfası sayısını ve Kindle düzenini belirleyin.
-3. **Kayıt türü** olarak **Taslak** (üzerinde çalışılan seçim) veya **Şablon** (tekrar kullanılacak seçim) belirleyin.
-4. **Kaydet:** aynı bulut kaydını oluşturur veya günceller. **Farklı kaydet:** ayrı bir kayıt oluşturur.
-5. Üstteki **Kayıtlı taslaklar ve şablonlar** bölümünde **Aç**, **Kopyala**, **Sil**, **Yenile** ve **Yeni çalışma** seçeneklerini kullanın.
-6. Açtığınız seçimlerle v3.6'da olduğu gibi Word, EPUB, TXT, Markdown ya da A4/Kindle PDF oluşturun.
+1. **Yayın Oluşturucu** menüsünü açın.
+2. **Mevzuat yayını** ve belirli **kaynak sürümü** seçin. Madde veya alt gereklilikleri işaretleyin.
+3. Mevzuat seçicisiyle diğer EASA yayınına geçin. **Önceden yaptığınız seçimler korunur.** İkinci yayından madde/bent ekleyin.
+4. **Tematik derleme sepeti** bölümünde kaynak başlıklarını, sürüm tarihlerini ve seçilen madde sayılarını kontrol edin. Kaynak gruplarını **yukarı/aşağı** taşıyarak rapor sırasını belirleyin. Bir kaynak grubunu tamamen çıkarmak için **Çıkar** kullanın. Aynı kaynağın maddeleri her zaman XML'deki özgün sırada kalır.
+5. Başlık/açıklama, ilişkili AMC/GM/CS, notlar ve Kindle düzeni seçeneklerini seçin.
+6. **Taslak/Şablon** olarak kaydedebilir; farklı cihazda açabilir veya **Word, EPUB, TXT, Markdown, A4 PDF ve Kindle PDF** oluşturabilirsiniz.
 
-## Veriler nerede saklanır?
+PDF/Kindle PDF, tarayıcıda açılan yazdırma düzeni üzerinden **Print → Save as PDF** ile oluşturulur. Kindle Scribe 2024'e el yazısı için **Send to Kindle** tercih edilir.
 
-- Firebase Firestore: yalnızca raporun başlığı, açıklaması, kayıt türü, seçili madde kodları, alt bent anahtarları, çıktı seçenekleri, sabitlenmiş XML sürüm kimliği ve sürüm kontrolü.
-- Google Drive: **mevcut**, değişmeyen orijinal XML ve ayrıştırılmış mevzuat dosyaları.
-- Yerel tarayıcı: derleme hazırlanırken işlenen mevzuat metinleri ve hazırlandıktan sonra indirilen çıktı.
+## Kaynak, sürüm ve güvenlik ilkeleri
 
-Firestore yolu: `users/{uid}/publicationDrafts/{draftId}`. Önceki tek kullanıcıya özel `match /users/{uid}/{doc=**}` kuralı bu koleksiyonu da kapsar. Mevcut Firestore güvenlik kurallarının **doğru Google hesabını** yetkilendirdiğinden emin olun. Yeni API veya OAuth kapsamı gerekmiyor.
+- Her seçim `familyId + versionId + provisionKey + (varsa) anchor` kimliğiyle saklanır; iki farklı mevzuattaki aynı isimli maddeler karıştırılmaz.
+- Her kaynak **yayımlandığı XML sürümüne sabitlenir**. Yeni bir EASA XML yayımlandığında eski kaynak kendiliğinden yeni sürüme geçirilmez.
+- Rapordaki her maddenin yanında EASA yayın adı ve sürüm tarihi belirtilir; tam XML sürüm kimlikleri belgenin sonundaki **Source XML identifiers** bölümünde yer alır. İlişkili AMC/GM/CS yalnızca kendi yayın ailesi içinde otomatik eşleştirilir.
+- Kayıtlı şablonun herhangi bir kaynak sürümü bulut kataloğunda yoksa kayıt korunur; açma ve dışa aktarma işlemlerinde kaynak yerine başka sürüm kullanılmaz.
+- Eksik madde veya bent eşleşmesi varsa rapor oluşturma engellenir; seçimler sessizce değiştirilmez.
+- Firestore'daki `users/{uid}/publicationDrafts/{draftId}` kaydına **yalnızca kaynak/sürüm kimlikleri, madde/bent seçimi ve rapor seçenekleri** yazılır. Orijinal XML, işlenmiş mevzuat metni ve çıktı dosyaları Firestore'a taşınmaz.
+- Kaydedilmiş **v3.7 tek-mevzuat şablonları** okunabilir. Şablon v3.8'de yeniden kaydedildiğinde yeni şema kullanılabilir; eski kayıtlar otomatik topluca değiştirilmez.
+- Başka cihazda eşzamanlı değişiklik sırasında Firestore `revision` çakışma kontrolü korunmuştur.
+- JSON katalog yedeğinde kayıtlı şablonlar mevcut `schema:3` manifest biçiminde bulunur; yeni seçim alanları da kaydedilir. Yedek yalnızca katalog ve şablon tanımlarını içerir, Drive'daki orijinal XML'leri içermez.
 
-## Güvenli sürüm ve senkronizasyon ilkeleri
+## Testler
 
-- Şablon **tam bir mevzuat sürümüne sabitlenir**. Yeni EASA XML'i geldiğinde otomatik yeni sürüme aktarılmaz.
-- Kullanılan madde veya bent eşleşmiyorsa **uyarı** gösterilir, dışa aktarma kapatılır, mevcut seçimler otomatik silinmez. İsterseniz yalnızca eşleşmeyen seçimleri açık onayla kaldırabilirsiniz.
-- Kaydedilmiş kaynak sürüm artık bulutta mevcut değilse şablon listede korunur ve “Kaynak sürüm bulunamadı” olarak gösterilir; eski mevzuat metni yerine başka sürüm kullanılmaz.
-- **Kişisel notların metni şablona kopyalanmaz.** Çıktıda “notları ekle” açıkken, geçerli Firestore notları çalışma anında alınır. Notların eski tarihli bir anlık görüntüsü gerekiyorsa Word/PDF çıktısını saklayın.
-- Kayıtlar Google hesabınızın Firebase kullanıcı kimliğiyle ilişkilidir. Başka cihazdan aynı hesapla açıp **Yenile** seçebilirsiniz.
-- Bir kayıt iki cihazda değiştirildiğinde Firestore işleminde sürüm (`revision`) kontrol edilir. Eski cihazın kaydı diğer cihazın değişikliğini otomatik ezmez. Değişiklikleri korumak için **Farklı kaydet** kullanın.
-- **Sil** sadece kaydedilmiş taslak/şablon kaydını siler. Mevzuat XML'i, notlar veya yer imleri silinmez.
-- İçeriklerdeki kişisel notlar resmi mevzuat olarak etiketlenmez. EASA mevzuatının uygulanabilirliğini resmi kaynaktan doğrulayın.
+- Gerçek Occurrence Reporting XML'indeki 119 kayıt ve gerçek Air Operations XML'inden alınmış 35 kayıtlık bir örnekle çoklu seçme, kaynak değiştirme, sırayı değiştirme, kaydetme/açma, farklı kaynak metinlerini koruma ve v3.7 şablon uyumluluğu denendi.
+- Word ve EPUB arşivleri açıldı ve içerikleri kontrol edildi; EPUB XML dosyaları ayrıştırıldı. Örnek Word görsel olarak sayfa sayfa kontrol edildi.
+- Kindle PDF tarayıcıdan üretildi; yaklaşık 186 × 248 mm sayfa boyutunda doğrulandı ve render edildi.
+- Masaüstü ve 390 piksel genişliğinde mobil görünüm test edildi; yatay taşma gözlenmedi.
+- Firebase ve Google Drive işlemleri **simüle edilen ortamda** test edildi. Gerçek Google hesabında canlı yükleme, kaydetme ve Drive erişimi bu ortamda doğrulanmadı. Gerçek ortamda özellikle ilk çoklu taslağı kaydetme/açma işlemini kontrol edin.
 
-## Yedekleme
+## Sınırlar
 
-**Hesap ve bağlantı → Yedekle** seçeneği artık kayıtlı derlemeleri de `publicationDrafts` alanında içerir. Mevcut v3 katalog yedeği biçimi `schema: 3` ile uyumludur. Geri yüklemede mevcut derlemelerin üstüne otomatik yazılmaz, yalnızca eksik kayıtlar eklenir; böylece farklı cihazların kayıtları yanlışlıkla üzerine yazılmaz.
+- Derleme başına en fazla **350 kullanıcı seçimi**, kaynak listesinde en fazla **40 XML sürümü**. Otomatik ilgili maddeler eklenince toplam bölüm sayısı 500'ü aşarsa dışa aktarma durdurulur.
+- Kaynak gruplarının sırası değiştirilebilir; **aynı grup içindeki maddeler XML sırasına göre** kalır. Serbest madde sıralama ve görsel bölüm editörü sonraki geliştirme olabilir.
+- DOCX/PDF/EPUB gibi belgelerde karmaşık XML tablolarının/görsellerinin özgün sayfa düzeniyle birebir eşleşmesi garanti edilemez; resmî kullanım öncesinde gözden geçirin.
+- Not metinleri şablon içine kopyalanmaz; dışa aktarırken mevcut Firestore notları isteğe bağlı olarak eklenir. Arşivde değişmez bir anlık görüntü istiyorsanız oluşturulan çıktıyı saklayın.
 
-Bu JSON yedek yalnızca Firestore kataloğu / notlar / rapor tanımlarını içerir; **Drive'daki XML dosyalarını içermez**.
+## Paketler
 
-## Sınırlamalar ve sonraki aşama
-
-- v3.7'nin her derlemesi **tek bir EASA yayın ailesinin tek bir XML sürümünü** kullanır. Birden fazla mevzuatı aynı tematik raporda birleştirme sonraki v3.8 aşamasıdır.
-- Çıktılar tarayıcıda oluşturulur; rapor Word/PDF/EPUB dosyası otomatik olarak Drive'a yüklenmez.
-- Firestore doküman boyutunu aşmamak için kayıt başına üst sınır yaklaşık 780 KiB ve 350 seçili kayıt olarak kontrol edilir.
-- PDF indirme v3.6'daki gibi tarayıcının **Yazdır → PDF olarak kaydet** işlemiyle yapılır.
-- Bazı XML tabloları/şekilleri özgün belgeyle aynı düzeni koruyamayabilir; hassas resmî kullanım öncesi çıktıları kontrol edin.
-- Canlı Firebase ve Drive hesabında bu ortamdan oturum açılmadı. Testler gerçek Occurrence Reporting ayrıştırılmış verileriyle, taklit edilmiş bulut işlemleriyle ve Chromium masaüstü/mobil tarayıcılarında yapıldı.
-
-## Dosya içeriği
-
-`EASA_v3_7_Guncelleme.zip`: değişmesi gereken 5 dosya + bu README.
-
-`EASA_v3_7_Tam_Kaynak.zip`: uygulamanın tüm kod dosyaları, `config.example.js`, `firestore.rules` ve bu README. **Gerçek `config.js` veya XML belgeleri ZIP'e eklenmemiştir.**
+- `EASA_v3_8_Guncelleme.zip`: güncellenmesi gereken 5 dosya ve README.
+- `EASA_v3_8_Tam_Kaynak.zip`: tüm uygulama kodu, örnek yapılandırma, Firebase kuralları ve README. **Gerçek `config.js` veya XML dosyaları dahil değildir.**
