@@ -17,3 +17,18 @@
 @media(max-width:1050px){.cloud-action{padding:8px 9px;font-size:11px}.top-search{display:none}}
 @media(max-width:780px){.cloud-form{grid-template-columns:1fr}.topbar{padding-left:10px;padding-right:10px}.top-right .btn{padding:8px 9px}.top-right{flex-shrink:0}.cloud-action{font-size:10px}}
 @media(max-width:420px){#logoutButton{display:none!important}}
+
+/* v3.3 - shared Firebase config onboarding (all devices) */
+.config-success{display:flex;align-items:flex-start;gap:14px;background:#effaf5;border:1px solid #bee8d2;border-radius:12px;padding:17px 18px;margin:14px 0;color:#21533f;font-size:13px;line-height:1.75}
+.config-success>.icon{margin-top:2px;color:#27835d}
+.config-success b{font-size:14px}
+.config-success code{color:#195d46}
+.setup-steps{display:grid;gap:12px;margin:17px 0}
+.setup-steps>div{display:flex;align-items:flex-start;gap:13px;border:1px solid var(--border);border-radius:10px;padding:13px 14px;background:#f9fbfd;font-size:13px;line-height:1.65}
+.setup-steps>div>b{flex:0 0 26px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px}
+.setup-steps code,.advanced-config code{background:#edf2f5;border-radius:4px;padding:2px 5px;overflow-wrap:anywhere}
+.advanced-config{margin-top:19px;border-top:1px solid var(--border);padding-top:15px;font-size:13px}
+.advanced-config summary{font-weight:700;color:#34566b;cursor:pointer;list-style-position:inside;padding:7px 0}
+.advanced-config[open] summary{margin-bottom:10px}
+.advanced-config .cloud-form{margin-top:14px}
+@media(max-width:690px){.config-success{padding:14px}.setup-steps>div{padding:12px}.advanced-config .cloud-form{grid-template-columns:1fr}}
