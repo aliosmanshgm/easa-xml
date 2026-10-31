@@ -1,62 +1,56 @@
-# EASA eRules Hub v3.8 – Çoklu Mevzuatla Tematik Derleme
+# Havacilik Mevzuati Hub v3.10 - Dogrudan PDF / DOCX mevzuat aktarimi
 
-v3.7'nin kaydedilebilir derleme/şablon altyapısına, **birden fazla EASA yayın ailesinden ve sabitlenmiş XML sürümlerinden madde seçerek tek rapor oluşturma** özelliği eklenmiştir.
+Bu surum, v3.9 TR-EASA mevzuat kutuphanesine **dogrudan Word (.docx), metin katmanli PDF (.pdf) ve TXT** yukleyip, kontrol ettikten sonra Google Drive + Firestore'a aktarma ozelligi ekler. Mevcut **EASA eRules XML** ve yapilandirilmis **Turkiye mevzuati XML** aktarimi aynen korunur.
 
-## v3.7'den yükseltme
+## GitHub Pages guncellemesi
 
-`EASA_v3_8_Guncelleme.zip` içindeki **beş dosyayı** GitHub Pages deposunda aynı yollarla değiştirin:
+`EASA_v3_10_Guncelleme.zip` icindeki su dosyalari depodaki AYNI yollarla yerlestirin:
 
-| Dosya | İşlem |
-| --- | --- |
-| `index.html` | Değiştirin (3.8.0 önbellek sürümü) |
-| `src/publisher-ui.js` | Değiştirin (çoklu seçimler / kaynak sepeti) |
-| `src/publications.js` | Değiştirin (çoklu kaynak çıktı motoru) |
-| `src/cloud.js` | Değiştirin (Firestore şablon kaynak doğrulaması) |
-| `src/style.css` | Değiştirin (masaüstü ve mobil kaynak sepeti) |
+- `index.html` (degistir)
+- `src/app.js` (degistir)
+- `src/cloud.js` (degistir)
+- `src/style.css` (degistir)
+- `src/tr-document-import.js` (**yeni**)
+- `src/tr-import-ui.js` (**yeni**)
 
-**Dokunmayın:** `config.js`, `firestore.rules`, `src/app.js`, `src/parser.js`, `src/clauses.js` ve `src/vendor/` dosyaları. Mevcut XML kaynaklarını tekrar yüklemeyin. Yeni Firebase/Google Drive API yetkisi veya Firebase kural değişikliği gerekmez.
+Diger dosyalari degistirmeyin. `config.js`, Firestore kurallari, mevcut Google Drive/XML kayitlari, notlar, TR-EASA eslestirmeleri, rapor sablonlari ve diger uygulama modulleri korunur. Bu guncelleme yeni OAuth scope, yeni Firebase koleksiyonu veya yeni Cloud projesi gerektirmez.
 
-GitHub Pages dağıtımı tamamlandıktan sonra masaüstünde `Ctrl+Shift+R` ile yenileyin. Mobilde aynı GitHub Pages sayfasını yeniden açın.
+Yeni `TR_Mevzuat_Semasi_v1_1.xsd` yardimci dogrulama semasi pakete eklenmistir; uygulamanin calismasi icin tarayicinin bu dosyayi indirmesi gerekmez. Word belgelerinde PDF sayfa numarasi olmadigi icin `sourcePage` opsiyoneldir; bos `sourcePages` alanlari semada izinlidir. XML `schemaVersion` mevcut TR ayristrici ile uyumlu olarak `1.0` kalir.
 
-## Kullanım
+> **Onemli:** Duz bir `index.html` yerine GitHub deposunun mevcut dosya hiyerarsisini koruyun; uygulama `src/*.js` modullerini ayri yukler. Ilk yenilemede masaustunde `Ctrl+Shift+R`, telefonda sayfayi yeniden acma kullanin.
 
-1. **Yayın Oluşturucu** menüsünü açın.
-2. **Mevzuat yayını** ve belirli **kaynak sürümü** seçin. Madde veya alt gereklilikleri işaretleyin.
-3. Mevzuat seçicisiyle diğer EASA yayınına geçin. **Önceden yaptığınız seçimler korunur.** İkinci yayından madde/bent ekleyin.
-4. **Tematik derleme sepeti** bölümünde kaynak başlıklarını, sürüm tarihlerini ve seçilen madde sayılarını kontrol edin. Kaynak gruplarını **yukarı/aşağı** taşıyarak rapor sırasını belirleyin. Bir kaynak grubunu tamamen çıkarmak için **Çıkar** kullanın. Aynı kaynağın maddeleri her zaman XML'deki özgün sırada kalır.
-5. Başlık/açıklama, ilişkili AMC/GM/CS, notlar ve Kindle düzeni seçeneklerini seçin.
-6. **Taslak/Şablon** olarak kaydedebilir; farklı cihazda açabilir veya **Word, EPUB, TXT, Markdown, A4 PDF ve Kindle PDF** oluşturabilirsiniz.
+## Kullanim
 
-PDF/Kindle PDF, tarayıcıda açılan yazdırma düzeni üzerinden **Print → Save as PDF** ile oluşturulur. Kindle Scribe 2024'e el yazısı için **Send to Kindle** tercih edilir.
+1. GitHub Pages'te uygulamayi acip Google hesabiyla giris yapin ve Google Drive iznini etkinlestirin.
+2. **Mevzuat yukle** secenegine basin. XML'ler toplu secilebilir; Word/PDF/TXT dosyalari ayrica **tek tek** secilerek incelenir.
+3. Word/PDF yerel tarayicida islenir; bu asamada buluta dosya yuklenmez.
+4. Olusan **BOLUM -> MADDE -> fikra -> bent -> alt bent** hiyerarsisini acilip kapanabilir maddeler uzerinde inceleyin. Mevzuat kodu, resmi adi, yayim tarihi (zorunlu), RG sayisi, yururluk tarihi ve kaynak URL'sini kontrol edin.
+5. Yanlis ayrilan bolumler/numaralar varsa **Kaynak metni duzenle** alanini kullanip **Metni yeniden analiz et** dugmesine basin. Duzenleme sonrasinda onayin yeniden verilmesi gerekir.
+6. Istiyorsaniz **XML indir** ile kontrole tabi dosyayi buluta atmadan disari alin.
+7. Maddeleri ve alt bentleri kaynak dosyayla karsilastirdiktan sonra onayi isaretleyip **Kontrol ettim, buluta kaydet** deyin.
+8. Kaydedilen duzenleme ayni kutuphanede aranabilir, notlanabilir, surumleri takip edilebilir, TR-EASA eslestirmelerinde kullanilabilir ve Yayın Oluşturucu'dan Word/EPUB/Kindle PDF derlemelerine eklenebilir.
 
-## Kaynak, sürüm ve güvenlik ilkeleri
+## Bulut verileri
 
-- Her seçim `familyId + versionId + provisionKey + (varsa) anchor` kimliğiyle saklanır; iki farklı mevzuattaki aynı isimli maddeler karıştırılmaz.
-- Her kaynak **yayımlandığı XML sürümüne sabitlenir**. Yeni bir EASA XML yayımlandığında eski kaynak kendiliğinden yeni sürüme geçirilmez.
-- Rapordaki her maddenin yanında EASA yayın adı ve sürüm tarihi belirtilir; tam XML sürüm kimlikleri belgenin sonundaki **Source XML identifiers** bölümünde yer alır. İlişkili AMC/GM/CS yalnızca kendi yayın ailesi içinde otomatik eşleştirilir.
-- Kayıtlı şablonun herhangi bir kaynak sürümü bulut kataloğunda yoksa kayıt korunur; açma ve dışa aktarma işlemlerinde kaynak yerine başka sürüm kullanılmaz.
-- Eksik madde veya bent eşleşmesi varsa rapor oluşturma engellenir; seçimler sessizce değiştirilmez.
-- Firestore'daki `users/{uid}/publicationDrafts/{draftId}` kaydına **yalnızca kaynak/sürüm kimlikleri, madde/bent seçimi ve rapor seçenekleri** yazılır. Orijinal XML, işlenmiş mevzuat metni ve çıktı dosyaları Firestore'a taşınmaz.
-- Kaydedilmiş **v3.7 tek-mevzuat şablonları** okunabilir. Şablon v3.8'de yeniden kaydedildiğinde yeni şema kullanılabilir; eski kayıtlar otomatik topluca değiştirilmez.
-- Başka cihazda eşzamanlı değişiklik sırasında Firestore `revision` çakışma kontrolü korunmuştur.
-- JSON katalog yedeğinde kayıtlı şablonlar mevcut `schema:3` manifest biçiminde bulunur; yeni seçim alanları da kaydedilir. Yedek yalnızca katalog ve şablon tanımlarını içerir, Drive'daki orijinal XML'leri içermez.
+- `Original_XML` - Uygulama tarafindan uretilen yapilandirilmis XML (EASA kaynaklari icin eskiden oldugu gibi EASA XML)
+- `Original_Documents` - **YENI**: Yuklediginiz kaynak DOCX/PDF/TXT dosyalarinin degistirilmemis kopyalari
+- `Processed_Data` - Arama/okuma icin sikistirilmis islenmis mevzuat JSON'u
+- `Firestore users/{uid}/releases` - Kaynak kimlikleri, surum bilgisi, dosya kimlikleri ve SHA-256 butunluk dogrulamasi; tam mevzuat metni Firestore'a yazilmaz.
 
-## Testler
+Sürüm yönetimi ekraninda TR dosyalari icin **XML indir** ve **Orijinal Word/PDF** ayri indirilir. Birebir ayni mevzuat metni ve ayni yayim tarihli ikinci kaynak varsa bu tekrar surum olarak kaydedilmez. Surum silinirse o surumun orijinal XML'i, kaynak PDF/DOCX'i ve islenmis JSON'u silinir; DIGER surumlere, rapor taslaklarina ve notlara dokunulmaz.
 
-- Gerçek Occurrence Reporting XML'indeki 119 kayıt ve gerçek Air Operations XML'inden alınmış 35 kayıtlık bir örnekle çoklu seçme, kaynak değiştirme, sırayı değiştirme, kaydetme/açma, farklı kaynak metinlerini koruma ve v3.7 şablon uyumluluğu denendi.
-- Word ve EPUB arşivleri açıldı ve içerikleri kontrol edildi; EPUB XML dosyaları ayrıştırıldı. Örnek Word görsel olarak sayfa sayfa kontrol edildi.
-- Kindle PDF tarayıcıdan üretildi; yaklaşık 186 × 248 mm sayfa boyutunda doğrulandı ve render edildi.
-- Masaüstü ve 390 piksel genişliğinde mobil görünüm test edildi; yatay taşma gözlenmedi.
-- Firebase ve Google Drive işlemleri **simüle edilen ortamda** test edildi. Gerçek Google hesabında canlı yükleme, kaydetme ve Drive erişimi bu ortamda doğrulanmadı. Gerçek ortamda özellikle ilk çoklu taslağı kaydetme/açma işlemini kontrol edin.
+## Sinirlar ve hukuk/metin dogrulugu
 
-## Sınırlar
+- Desteklenen: `.docx`, metin katmanli `.pdf`, `.txt`; **eski `.doc`** ve taranmis/resim PDF'lerde otomatik OCR **yoktur**. Bunlari once metin katmanli PDF veya DOCX'e donusturun.
+- 80 MB dosya ve 450 PDF sayfasi teknik ust siniri; cihaz performansi daha once sinirlayabilir.
+- PDF metin ayrıştırması **PDF.js 3.11.174** ile tarayicida yapilir ve bu kitaplik ilk PDF kullaniminda su kaynaktan yuklenir: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js` (worker ayni versiyon). Bu nedenle ilk PDF isleme icin internete ve bu alana erisim gereklidir. Word ise projede zaten mevcut JSZip kutuphanesini kullanir.
+- Word'un otomatik listeleri metne dahil edilmeyebilir; tablolar satir metnine donusturulur. Orijinal Word'de sayfa bilgisi yoksa PDF sayfa numarasi uydurulmaz.
+- Karmaşık iki sütunlu PDF, dipnot, tablolar, ekler, devam sayfalari, ek/gecici madde duzenleri ve standart disi mevzuat bicimleri insan kontrolu gerektirir; basit surum bunlarin tumunu garanti etmez. EK/tablo tespit edilirse otomatik yayim engellenir. Harici XML donusturucusunde farkli sema varsa otomatik anlasilmayabilir.
+- ***Bu sistem bir resmî mevzuat doğrulama servisi değildir.*** Yükleyen kişi metni Resmî Gazete / resmî yayımlayıcıyla kontrol etmelidir. Yayımlama için açık onay istenir; kaynakla eşleştirme veya hukuki uyum değerlendirmesi otomatik kurulmaz.
+- Gizli Firebase veya Google OAuth anahtarları bu pakette yoktur. Mevcut `config.js` korunmalıdır.
 
-- Derleme başına en fazla **350 kullanıcı seçimi**, kaynak listesinde en fazla **40 XML sürümü**. Otomatik ilgili maddeler eklenince toplam bölüm sayısı 500'ü aşarsa dışa aktarma durdurulur.
-- Kaynak gruplarının sırası değiştirilebilir; **aynı grup içindeki maddeler XML sırasına göre** kalır. Serbest madde sıralama ve görsel bölüm editörü sonraki geliştirme olabilir.
-- DOCX/PDF/EPUB gibi belgelerde karmaşık XML tablolarının/görsellerinin özgün sayfa düzeniyle birebir eşleşmesi garanti edilemez; resmî kullanım öncesinde gözden geçirin.
-- Not metinleri şablon içine kopyalanmaz; dışa aktarırken mevcut Firestore notları isteğe bağlı olarak eklenir. Arşivde değişmez bir anlık görüntü istiyorsanız oluşturulan çıktıyı saklayın.
+## Test özeti
 
-## Paketler
+Kaynak SHY-OLAY (18.09.2026 / 33374) örnek PDF ve DOCX temsili kopyasıyla: **4 bölüm, 30 madde (29 + 1 geçici), 88 fıkra, 59 bent, 3 alt bent** elde edildi. İki çıktı da doğrulanmış SHY-OLAY XML'i ile madde metni ve başlık düzeyinde eşleşti. XML yeni yardımcı XSD ile doğrulandı. Önizleme, yayın onayı, mock Drive/Firestore kaynak arşivi, mobil görünüm ve orijinal kaynak indirme bağlantısı test edildi.
 
-- `EASA_v3_8_Guncelleme.zip`: güncellenmesi gereken 5 dosya ve README.
-- `EASA_v3_8_Tam_Kaynak.zip`: tüm uygulama kodu, örnek yapılandırma, Firebase kuralları ve README. **Gerçek `config.js` veya XML dosyaları dahil değildir.**
+**Canlı Firebase / Google Drive hesabında gerçek veri yükleme testi yapılamadı.** İlk canlı denemede küçük bir DOCX ve ardından SHY-OLAY PDF'si ile kontrol edilmesi önerilir. **Her yeni mevzuat kaynağında tam metin gözden geçirmesi önemlidir.**

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:tr="urn:eyuik:legislation:tr:v1"
+  targetNamespace="urn:eyuik:legislation:tr:v1"
+  elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+ <xs:element name="legislation" type="tr:LegislationType"/>
+ <xs:complexType name="LegislationType">
+  <xs:sequence>
+   <xs:element name="metadata" type="tr:MetadataType"/>
+   <xs:element name="chapter" type="tr:ChapterType" maxOccurs="unbounded"/>
+  </xs:sequence>
+  <xs:attribute name="schemaVersion" type="xs:string" use="required"/>
+  <xs:attribute name="code" type="xs:string" use="required"/>
+  <xs:attribute name="language" type="xs:language" use="required"/>
+  <xs:attribute name="id" type="xs:string" use="required"/>
+ </xs:complexType>
+ <xs:complexType name="MetadataType">
+  <xs:sequence>
+   <xs:element name="title" type="xs:string"/>
+   <xs:element name="shortTitle" type="xs:string"/>
+   <xs:element name="issuer" type="xs:string"/>
+   <xs:element name="source" type="tr:SourceType"/>
+   <xs:element name="file" type="tr:FileType"/>
+   <xs:element name="version" type="tr:VersionType"/>
+  </xs:sequence>
+ </xs:complexType>
+ <xs:complexType name="SourceType">
+  <xs:attribute name="type" type="xs:string" use="required"/>
+  <xs:attribute name="publicationDate" type="xs:date"/>
+  <xs:attribute name="number" type="xs:string"/>
+  <xs:attribute name="url" type="xs:anyURI"/>
+ </xs:complexType>
+ <xs:complexType name="FileType">
+  <xs:attribute name="name" type="xs:string" use="required"/>
+  <xs:attribute name="sha256" type="xs:string" use="required"/>
+ </xs:complexType>
+ <xs:complexType name="VersionType">
+  <xs:attribute name="date" type="xs:string" use="required"/>
+  <xs:attribute name="mode" type="xs:string" use="required"/>
+  <xs:attribute name="effectiveDate" type="xs:date" use="optional"/>
+ </xs:complexType>
+ <xs:complexType name="ChapterType">
+  <xs:sequence><xs:element name="article" type="tr:ArticleType" maxOccurs="unbounded"/></xs:sequence>
+  <xs:attribute name="number" type="xs:nonNegativeInteger" use="required"/>
+  <xs:attribute name="ordinal" type="xs:string" use="required"/>
+  <xs:attribute name="title" type="xs:string" use="required"/>
+  <xs:attribute name="sourcePage" type="xs:positiveInteger" use="optional"/>
+  <xs:attribute name="id" type="xs:string" use="required"/>
+ </xs:complexType>
+ <xs:complexType name="ArticleType">
+  <xs:sequence><xs:element name="paragraph" type="tr:ParagraphType" maxOccurs="unbounded"/></xs:sequence>
+  <xs:attribute name="number" type="xs:positiveInteger" use="required"/>
+  <xs:attribute name="temporary" type="xs:boolean" use="required"/>
+  <xs:attribute name="heading" type="xs:string" use="required"/>
+  <xs:attribute name="id" type="xs:string" use="required"/>
+  <xs:attribute name="sourcePage" type="xs:positiveInteger" use="optional"/>
+ </xs:complexType>
+ <xs:complexType name="ParagraphType">
+  <xs:sequence>
+   <xs:element name="text" type="xs:string"/>
+   <xs:element name="item" type="tr:ItemType" minOccurs="0" maxOccurs="unbounded"/>
+   <xs:element name="closing" type="xs:string" minOccurs="0"/>
+  </xs:sequence>
+  <xs:attribute name="id" type="xs:string" use="required"/>
+  <xs:attribute name="sourcePages" type="xs:string" use="required"/>
+  <xs:attribute name="number" type="xs:positiveInteger"/>
+ </xs:complexType>
+ <xs:complexType name="ItemType">
+  <xs:sequence><xs:element name="text" type="xs:string"/>
+   <xs:element name="item" type="tr:ItemType" minOccurs="0" maxOccurs="unbounded"/>
+  </xs:sequence>
+  <xs:attribute name="level" type="xs:string" use="required"/>
+  <xs:attribute name="label" type="xs:string"/>
+  <xs:attribute name="number" type="xs:positiveInteger"/>
+  <xs:attribute name="id" type="xs:string" use="required"/>
+  <xs:attribute name="sourcePages" type="xs:string" use="required"/>
+ </xs:complexType>
+</xs:schema>
