@@ -204,6 +204,34 @@
     try{await modules.fs.deleteDoc(doc('publicationDrafts',id));}
     catch(e){throw firestoreError(e);}
   }
+  // v3.9: User-created cross-jurisdiction provision mappings.
+  // Stores only provision identities and review notes, never bulk legal text.
+  async function listMappings() {
+    ensureLogin();
+    try {const snap=await modules.fs.getDocs(coll('mappings'));return snap.docs.map(x=>({...x.data(),id:x.id})).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));}
+    catch(e){throw firestoreError(e);}
+  }
+  async function saveMapping(mapping,expectedRevision=0) {
+    ensureLogin();
+    if(!mapping||!/^map_[a-zA-Z0-9_-]{20,80}$/.test(mapping.id))throw Error('Eşleştirme kimliği geçersiz.');
+    if(!mapping.from?.familyId?.startsWith('tr-')||!mapping.to?.familyId?.startsWith('easa-'))throw Error('Eşleştirmede Türkiye ve EASA mevzuatı seçilmelidir.');
+    for(const side of [mapping.from,mapping.to]) {
+      if(!side.versionId||!side.key||!side.familyId||String(side.anchor||'').length>120)throw Error('Eşleştirme kaynağı eksik.');
+    }
+    if(!['related','similar','partial','different'].includes(mapping.relation))throw Error('İlişki türü geçersiz.');
+    if(!['draft','reviewed'].includes(mapping.status))throw Error('Değerlendirme durumu geçersiz.');
+    if(String(mapping.rationale||'').trim().length<8||String(mapping.rationale).length>4000)throw Error('Eşleştirme gerekçesi 8-4000 karakter olmalıdır.');
+    const ref=doc('mappings',mapping.id);
+    try{return await modules.fs.runTransaction(firestore,async tx=>{
+      const oldSnap=await tx.get(ref);const old=oldSnap.exists()?oldSnap.data():null;
+      const revision=Number(old?.revision)||0;
+      if(revision!==Number(expectedRevision||0))throw Error('Bu eşleştirme başka cihazda güncellenmiş. Buluttan yenileyip tekrar deneyin.');
+      const now=new Date().toISOString();
+      const next={...mapping,createdAt:old?.createdAt||mapping.createdAt||now,updatedAt:now,revision:revision+1};
+      tx.set(ref,next);return next;
+    });}catch(e){throw firestoreError(e);}
+  }
+  async function deleteMapping(id){ensureLogin();if(!/^map_[a-zA-Z0-9_-]{20,80}$/.test(id))throw Error('Eşleştirme kimliği geçersiz.');try{await modules.fs.deleteDoc(doc('mappings',id));}catch(e){throw firestoreError(e);}}
   async function driveFetch(url, options = {}) {
     ensureDrive();
     const hdr = new Headers(options.headers || {});
@@ -274,6 +302,7 @@
     if (!info.rootId) info.rootId = await findFolder('EASA eRules Hub') || await createFolder('EASA eRules Hub');
     if (!info.xmlId) info.xmlId = await findFolder('Original_XML',info.rootId) || await createFolder('Original_XML',info.rootId);
     if (!info.dataId) info.dataId = await findFolder('Processed_Data',info.rootId) || await createFolder('Processed_Data',info.rootId);
+    if (!info.sourceId) info.sourceId = await findFolder('Original_Documents',info.rootId) || await createFolder('Original_Documents',info.rootId);
     await modules.fs.setDoc(drRef,info,{merge:false});
     return info;
   }
@@ -330,7 +359,7 @@
     const res=await driveFetch(`${DRIVE_API}/files/${encodeURIComponent(id)}`,{method:'DELETE'});
     if (res.status!==404) await checkDrive(res,'Drive dosyası silme');
   }
-  async function uploadVersion(parsedDoc, rawFile, processedBinary, compressed, progress=()=>{}) {
+  async function uploadVersion(parsedDoc, rawFile, processedBinary, compressed, progress=()=>{}, sourceFile=null) {
     ensureLogin();ensureDrive();
     const id=await sha256(parsedDoc.versionId);
     const ref=doc('releases',id);
@@ -341,18 +370,29 @@
     const dataHash=await sha256(binary);
     const namePrefix=[parsedDoc.familyId.slice(0,58),parsedDoc.published?.slice(0,10)||'tarihsiz',parsedDoc.guid?.slice(0,8)||''].filter(Boolean).join('_');
     try {
-      progress(1,'Orijinal XML Google Drive’a aktarılıyor…');
-      const xml=await uploadBlob(`${namePrefix}_${rawFile.name}`.slice(0,180),rawFile,'application/xml',folders.xmlId,n=>progress(3+Math.round(n*.71),'Orijinal XML aktarılıyor…'));
+      progress(1,'Yapılandırılmış XML Google Drive’a aktarılıyor…');
+      const xml=await uploadBlob(`${namePrefix}_${rawFile.name}`.slice(0,180),rawFile,'application/xml',folders.xmlId,n=>progress(2+Math.round(n*(sourceFile?.size?0.38:0.73)),'XML aktarılıyor…'));
       uploaded.push(xml.id);
-      progress(75,'İşlenmiş mevzuat dosyası aktarılıyor…');
-      const data=await uploadBlob(`${namePrefix}.json${compressed?'.gz':''}`,new Blob([binary],{type:compressed?'application/gzip':'application/json'}),compressed?'application/gzip':'application/json',folders.dataId,n=>progress(76+Math.round(n*.20),'İşlenmiş kayıtlar aktarılıyor…'));
+      let original=null, sourceHash='';
+      if(sourceFile){
+        if(!/\.(docx|pdf|txt)$/i.test(sourceFile.name)||sourceFile.size>80*1024*1024)throw Error('Kaynak dosya biçimi veya büyüklüğü desteklenmiyor.');
+        const mime=/\.pdf$/i.test(sourceFile.name)?'application/pdf':/\.docx$/i.test(sourceFile.name)?'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'text/plain';
+        sourceHash=await sha256(new Uint8Array(await sourceFile.arrayBuffer()));
+        progress(42,'Orijinal Word/PDF kaynağı arşivleniyor…');
+        original=await uploadBlob(`${namePrefix}_${sourceFile.name}`.slice(0,180),sourceFile,mime,folders.sourceId,n=>progress(43+Math.round(n*.34),'Orijinal Word/PDF yükleniyor…'));
+        uploaded.push(original.id);
+      }
+      progress(78,'İşlenmiş mevzuat dosyası aktarılıyor…');
+      const data=await uploadBlob(`${namePrefix}.json${compressed?'.gz':''}`,new Blob([binary],{type:compressed?'application/gzip':'application/json'}),compressed?'application/gzip':'application/json',folders.dataId,n=>progress(79+Math.round(n*.17),'İşlenmiş kayıtlar aktarılıyor…'));
       uploaded.push(data.id);
       const record={
         versionId:parsedDoc.versionId,familyId:parsedDoc.familyId,title:parsedDoc.title,
         published:parsedDoc.published,guid:parsedDoc.guid,count:parsedDoc.records.length,stats:parsedDoc.stats,
         rawFileId:xml.id,rawName:rawFile.name,rawBytes:rawFile.size,
+        ...(original?{sourceFileId:original.id,sourceName:sourceFile.name,sourceBytes:sourceFile.size,
+          sourceSha256:sourceHash,sourceMime:sourceFile.type||''}:{ }),
         dataFileId:data.id,dataCompressed:compressed,dataBytes:binary.byteLength,dataHash,
-        storedAt:new Date().toISOString(), schema:3
+        storedAt:new Date().toISOString(), schema:parsedDoc.parseSchema||3
       };
       progress(97,'Firebase mevzuat kataloğu güncelleniyor…');
       await modules.fs.setDoc(ref,record,{merge:false});
@@ -395,12 +435,12 @@
     ensureLogin();ensureDrive();
     const id=await sha256(row.versionId);
     await modules.fs.deleteDoc(doc('releases',id));
-    const results=await Promise.allSettled([deleteDriveFile(row.rawFileId),deleteDriveFile(row.dataFileId)]);
+    const results=await Promise.allSettled([deleteDriveFile(row.rawFileId),deleteDriveFile(row.dataFileId),deleteDriveFile(row.sourceFileId)]);
     return {orphaned:results.filter(r=>r.status==='rejected').length};
   }
   function folderUrl(folderId){return folderId?`https://drive.google.com/drive/u/0/folders/${encodeURIComponent(folderId)}`:'';}
   async function getFolderUrl() {
     ensureLogin();const d=await modules.fs.getDoc(doc('settings','driveFolder'));return folderUrl(d.data()?.rootId);
   }
-  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
+  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,listMappings,saveMapping,deleteMapping,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
 })(window);
