@@ -25,6 +25,10 @@ async function storePut(name,value){if(!db){ephemeral[name].set(value[name==='re
 async function storeDel(name,key){if(!db){ephemeral[name].delete(key);return;}return new Promise((resolve,reject)=>{const tx=db.transaction(name,'readwrite');tx.objectStore(name).delete(key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 const state={view:'library',familyId:null,releaseId:null,readerQuery:'',readerCategory:'ALL',readerKind:'ALL',readerLimit:90,selectedKey:null,globalQuery:'',globalKind:'ALL',globalFamily:'ALL',globalLimit:70,diffFamily:null,diffOld:null,diffNew:null,diffFilter:'ALL',diffRows:[],diffSelected:0,busy:false,openClause:null,openClauseRecord:null};
 let releaseRows=[];let familyRows=[];let annotations=new Map();let settings=new Map();const cache=new Map();let activeDoc=null;let modalLocked=false;let pendingSearch=null;
+// v3.10.1: Word/PDF importer is optional at bootstrap; a missing deployment file
+// must not prevent the rest of the application from receiving click handlers.
+let trImporterReady=false;
+
 // v3.5: reader and page navigation using the browser's native history.
 // Only lightweight route/filter/scroll information is held here; cloud data
 // and personal notes remain in their existing Firebase/Drive locations.
@@ -297,7 +301,7 @@ function renderSettings(){
     <div class="info-strip">${icon('info')}<div>Orijinal XML, DOCX ve PDF dosyalarınız Google Drive'da, mevzuat kayıtları ve notlarınız Firebase'de saklanır. Bu güncelleme mevcut verileri taşımaz veya silmez. Firebase bağlantı bilgileri herkese açık GitHub Pages üzerinden paylaşılacağı için erişim güvenliği Firestore kuralları ve Google hesap izinleriyle sağlanmalıdır.</div></div>`;
 }
 
-async function renderScreen(){document.getElementById('breadcrumbs').innerHTML=breadcrumb();updateSidebar();switch(state.view){case 'library':initLibrary();break;case 'reader':await renderReader();break;case 'search':renderSearchShell();break;case 'bookmarks':renderBookmarks();break;case 'versions':renderVersions();break;case 'publish':await EasaPublisherUI.render();break;case 'mappings':await EasaMappingsUI.render();break;case 'compare':renderCompareShell();break;case 'settings':renderSettings();break;default:initLibrary();}}
+async function renderScreen(){document.getElementById('breadcrumbs').innerHTML=breadcrumb();updateSidebar();switch(state.view){case 'library':initLibrary();break;case 'reader':await renderReader();break;case 'search':renderSearchShell();break;case 'bookmarks':renderBookmarks();break;case 'versions':renderVersions();break;case 'publish':if(window.EasaPublisherUI?.render)await EasaPublisherUI.render();else document.getElementById('screen').innerHTML='<div class="panel"><h3>Yayın Oluşturucu modülü bulunamadı</h3><p>GitHub içindeki src/publisher-ui.js dosyasını kontrol edin.</p></div>';break;case 'mappings':if(window.EasaMappingsUI?.render)await EasaMappingsUI.render();else document.getElementById('screen').innerHTML='<div class="panel"><h3>Eşleştirme modülü bulunamadı</h3><p>GitHub içindeki src/mappings-ui.js dosyasını kontrol edin.</p></div>';break;case 'compare':renderCompareShell();break;case 'settings':renderSettings();break;default:initLibrary();}}
 async function parseFile(file,onProgress){
   const header=await file.slice(0,4096).text();
   if(/<(?:[A-Za-z][\w.-]*:)?legislation[\s>]/.test(header)){
@@ -465,7 +469,7 @@ document.getElementById('xmlFiles').addEventListener('change',e=>{
  const files=[...e.target.files];e.target.value='';if(!files.length)return;
  const docs=files.filter(f=>/\.(docx|pdf|txt)$/i.test(f.name)),xml=files.filter(f=>/\.xml$/i.test(f.name));
  if(xml.length===files.length){importFiles(files).catch(err=>{modalLocked=false;closeModal();showError(err);});return;}
- if(docs.length===1&&files.length===1){EasaTrImportUI.start(docs[0]).catch(showError);return;}
+ if(docs.length===1&&files.length===1){if(!trImporterReady)return showError(Error('Word/PDF içe aktarma modülü yüklenemedi. GitHub deposunda src/tr-import-ui.js ve src/tr-document-import.js dosyalarının bulunduğunu kontrol edin. Ana kütüphane ve EASA XML aktarımı kullanılabilir.'));window.EasaTrImportUI.start(docs[0]).catch(showError);return;}
  showError(Error('Word/PDF mevzuatını kontrol etmek için her seferinde bir belge seçin. XML dosyalarını ise toplu yükleyebilirsiniz.'));
 });document.getElementById('backupFile').addEventListener('change',e=>{const f=e.target.files?.[0];e.target.value='';restoreBackup(f).catch(showError);});document.getElementById('menuButton').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));document.getElementById('topQuery').addEventListener('keydown',e=>{if(e.key==='Enter'){state.globalQuery=e.target.value;nav('search');}});document.getElementById('modalLayer').addEventListener('click',e=>{if(e.target.id==='modalLayer')closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});document.addEventListener('submit',e=>{if(e.target.id==='firebaseForm'){e.preventDefault();const data=Object.fromEntries(new FormData(e.target));saveCloudConfig(data).catch(showError);}});
 window.addEventListener('popstate',e=>{
@@ -477,6 +481,37 @@ window.addEventListener('popstate',e=>{
 });
 }
 (async function startup(){
-EasaTrImportUI.configure({modal,close:()=>{modalLocked=false;closeModal();},modalLocked:value=>{modalLocked=value;},toast:showToast,error:showError,saveFile,parseXml:parseTrXml,ready:()=>!!EasaCloud.user()&&EasaCloud.driveReady(),publish:uploadReviewedTrDoc});
-EasaPublisherUI.configure({families:()=>familyRows,loadDoc:getDoc,annotations:()=>annotations,loggedIn:()=>!!EasaCloud.user(),currentView:()=>state.view,date:shortDate,toast:showToast,error:showError,listDrafts:()=>EasaCloud.listPublicationDrafts(),saveDraft:(draft,expectedRevision)=>EasaCloud.savePublicationDraft(draft,expectedRevision),deleteDraft:(id)=>EasaCloud.deletePublicationDraft(id)});
-EasaMappingsUI.configure({families:()=>familyRows,loadDoc:getDoc,currentView:()=>state.view,loggedIn:()=>!!EasaCloud.user(),toast:showToast,error:showError,listMappings:()=>EasaCloud.listMappings(),saveMapping:(data,rev)=>EasaCloud.saveMapping(data,rev),deleteMapping:id=>EasaCloud.deleteMapping(id)});bindEvents();showLoading('Bulut kütüphanesi başlatılıyor…');try{if(window.EASA_CONFIG_READY)await window.EASA_CONFIG_READY;await startDB();const config=readCloudConfig();if(EasaCloud.configured(config)){try{await EasaCloud.init(config,handleCloudUserChange);cloudConnected=true;}catch(e){showError(e);}}await refreshMetadata();await renderScreen();initRouteTrail();if(!persistent)showToast('Tarayıcı önbelleği geçici. Bulut verileri korunur ancak çevrimdışı okuma çalışmayabilir.','warn');}catch(err){showError(err);nav('settings');}})();
+// Bind core controls before any optional module is configured. Previously an
+// absent tr-import-ui.js raised ReferenceError and rendered every menu inert.
+bindEvents();
+window.ERULES_APP_EVENTS_READY=true;
+if(window.EasaTrImportUI?.configure && window.EasaTrDocuments?.readFile){
+  try{
+    window.EasaTrImportUI.configure({modal,close:()=>{modalLocked=false;closeModal();},modalLocked:value=>{modalLocked=value;},toast:showToast,error:showError,saveFile,parseXml:parseTrXml,ready:()=>!!EasaCloud.user()&&EasaCloud.driveReady(),publish:uploadReviewedTrDoc});
+    trImporterReady=true;
+  }catch(err){console.error('TR import failed to initialise',err);window.erulesBootReport?.('Word/PDF içe aktarma modülü başlatılamadı: '+err.message);}
+}else{
+  const missing=[!window.EasaTrDocuments?.readFile?'src/tr-document-import.js':null,!window.EasaTrImportUI?.configure?'src/tr-import-ui.js':null].filter(Boolean);
+  window.erulesBootReport?.('Word/PDF yükleme için gerekli dosya eksik veya çalışmıyor: '+missing.join(', ')+'. Güncelleme paketini aynı klasör yapısıyla GitHub’a yükleyin. Diğer menüler kullanılabilir.');
+}
+if(window.EasaPublisherUI?.configure){
+  EasaPublisherUI.configure({families:()=>familyRows,loadDoc:getDoc,annotations:()=>annotations,loggedIn:()=>!!EasaCloud.user(),currentView:()=>state.view,date:shortDate,toast:showToast,error:showError,listDrafts:()=>EasaCloud.listPublicationDrafts(),saveDraft:(draft,expectedRevision)=>EasaCloud.savePublicationDraft(draft,expectedRevision),deleteDraft:(id)=>EasaCloud.deletePublicationDraft(id)});
+}else window.erulesBootReport?.('Yayın Oluşturucu modülü yüklenemedi: src/publisher-ui.js.');
+if(window.EasaMappingsUI?.configure){
+  EasaMappingsUI.configure({families:()=>familyRows,loadDoc:getDoc,currentView:()=>state.view,loggedIn:()=>!!EasaCloud.user(),toast:showToast,error:showError,listMappings:()=>EasaCloud.listMappings(),saveMapping:(data,rev)=>EasaCloud.saveMapping(data,rev),deleteMapping:id=>EasaCloud.deleteMapping(id)});
+}else window.erulesBootReport?.('Eşleştirme modülü yüklenemedi: src/mappings-ui.js.');
+showLoading('Bulut kütüphanesi başlatılıyor…');
+try{
+  if(window.EASA_CONFIG_READY)await window.EASA_CONFIG_READY;
+  await startDB();
+  const config=readCloudConfig();
+  if(EasaCloud.configured(config)){
+    try{await EasaCloud.init(config,handleCloudUserChange);cloudConnected=true;}
+    catch(e){showError(e);}
+  }
+  await refreshMetadata();
+  await renderScreen();
+  initRouteTrail();
+  if(!persistent)showToast('Tarayıcı önbelleği geçici. Bulut verileri korunur ancak çevrimdışı okuma çalışmayabilir.','warn');
+}catch(err){showError(err);nav('settings');}
+})();
