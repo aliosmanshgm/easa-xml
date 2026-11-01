@@ -115,6 +115,39 @@
     try {const snapshot = await modules.fs.getDocs(coll('releases'));return snapshot.docs.map(x=>x.data());}
     catch(e) {throw firestoreError(e);}
   }
+  // v3.11.1 - user-confirmed legal dates for an EXISTING release.
+  // Only Firestore catalogue metadata changes. The XML, processed binary,
+  // source files, publication fingerprint and annotations stay untouched.
+  async function saveReleaseDates(versionId, dates, expectedRevision=0) {
+    ensureLogin();
+    if(typeof versionId!=='string'||!versionId||versionId.length>300)throw Error('Mevzuat sürüm kimliği geçersiz.');
+    const validDate=s=>{
+      if(!s)return true;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;
+      const d=new Date(s+'T00:00:00Z');return Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;
+    };
+    const effectiveDate=String(dates?.effectiveDate||''), applicabilityDate=String(dates?.applicabilityDate||'');
+    const reference=String(dates?.reference||'').trim(), note=String(dates?.note||'').trim();
+    if(!validDate(effectiveDate)||!validDate(applicabilityDate))throw Error('Yürürlük veya uygulanabilirlik tarihi geçersiz.');
+    if(reference.length>300||note.length>1500)throw Error('Kaynak hüküm veya tarih açıklaması çok uzun.');
+    const ref=doc('releases',await sha256(versionId));
+    try {
+      return await modules.fs.runTransaction(firestore,async tx=>{
+        const snap=await tx.get(ref);
+        if(!snap.exists()||snap.data()?.versionId!==versionId)throw Error('Mevzuat sürümü bulut kataloğunda bulunamadı.');
+        const old=snap.data(),revision=Number(old.legalDates?.revision)||0;
+        if(revision!==Number(expectedRevision||0)){
+          const err=Error('Tarih bilgileri başka bir cihazda değişmiş. Buluttan yenileyip tekrar kontrol edin.');
+          err.code='EASA_LEGAL_DATES_CONFLICT';throw err;
+        }
+        const next={effectiveDate,applicabilityDate,reference,note,revision:revision+1,
+          updatedAt:new Date().toISOString(),updatedBy:'manual'};
+        // Transaction.update preserves Drive IDs, hashes, notes and any future fields.
+        tx.update(ref,{legalDates:next});
+        return next;
+      });
+    }catch(e){throw firestoreError(e);}
+  }
   async function listAnnotations() {
     try {const snapshot = await modules.fs.getDocs(coll('annotations'));return snapshot.docs.map(x=>x.data());}
     catch(e) {throw firestoreError(e);}
@@ -447,5 +480,5 @@
   async function getFolderUrl() {
     ensureLogin();const d=await modules.fs.getDoc(doc('settings','driveFolder'));return folderUrl(d.data()?.rootId);
   }
-  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,listMappings,saveMapping,deleteMapping,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
+  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,saveReleaseDates,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,listMappings,saveMapping,deleteMapping,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
 })(window);

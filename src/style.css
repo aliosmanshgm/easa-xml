@@ -330,3 +330,19 @@
 .tr-draft-guidance{padding:12px;border-radius:8px;background:var(--surface-secondary,#f3f7fa);border:1px solid var(--border,#d5e0e7)}
 .tr-draft-guidance p{font-size:12px;margin:5px 0 12px;color:var(--muted,#667b87)}
 .tr-draft-guidance .tr-field{margin-bottom:10px}
+
+/* v3.11.1 – official-date metadata editing, separate from source text */
+.legal-date-small{display:block;margin-top:4px;font-size:10px;color:#7c8d9c;font-weight:500;line-height:1.45}
+.legal-date-suggestion{color:#946217;font-weight:750}
+.legal-dates-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:-14px 0 23px;padding:10px 13px;border-radius:9px;background:#f3f8fb;border:1px solid #e1eaf0;font-size:11px;line-height:1.6;color:#596f80}
+.legal-dates-actions .btn{flex-shrink:0}
+.legal-date-dialog h2{display:flex;align-items:center;gap:9px}
+.legal-dates-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0 0}
+.legal-dates-form label{display:flex;flex-direction:column;gap:6px;color:#4c6677;font-weight:700;font-size:12px}
+.legal-dates-form label:nth-last-child(-n+2){grid-column:span 2}
+.legal-dates-form .form-field{width:100%;min-width:0}
+.legal-dates-form textarea{resize:vertical}
+.legal-date-help{grid-column:span 2;color:#607789;font-size:11px;line-height:1.55}
+.date-extract-note{background:#f2f8fc;border:1px solid #deebf3;border-radius:9px;padding:10px 12px;font-size:11.5px;line-height:1.6;color:#45627b}
+.date-extract-note b{color:#214b66}.date-extract-note span{display:inline-block;margin-left:5px}.date-extract-note button{margin-left:9px}
+@media(max-width:600px){.legal-dates-form{grid-template-columns:1fr}.legal-dates-form label,.legal-dates-form label:nth-last-child(-n+2),.legal-date-help{grid-column:1}.legal-dates-actions{align-items:flex-start}}

@@ -50,6 +50,7 @@ function validateXml(xml,{allowLegacy=true}={}){
  const file=first(meta,'file'),ver=first(meta,'version');
  const digest=attr(file,'sha256');if(digest&&!/^[a-f0-9]{64}$/i.test(digest))fail('HASH','metadata/file','SHA-256 özeti 64 onaltılık karakter olmalı.');
  const dt=attr(ver,'effectiveDate');if(dt&&!goodDate(dt))fail('DATE','metadata/version','Yürürlük tarihi geçersiz.');
+ const application=attr(ver,'applicabilityDate');if(application&&!goodDate(application))fail('DATE','metadata/version','Uygulanabilirlik tarihi geçersiz.');
  const published=attr(first(meta,'source'),'publicationDate');if(published&&!goodDate(published))fail('DATE','metadata/source','Yayım tarihi geçersiz.');
  const used=new Set(),articleIds=[];
  const hasId=(node,where)=>{

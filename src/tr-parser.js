@@ -30,7 +30,7 @@ function parseTrXml(xml,onProgress){
  const title=childText(metadata,'title')||(child(metadata,'classification')?.getAttribute('kind')==='genelge'?'Genelge · '+code:'');if(!title)throw Error('Mevzuat adı bulunamadı.');
  const source=child(metadata,'source'),file=child(metadata,'file'),ver=child(metadata,'version'),cl=child(metadata,'classification');
  const published=source?.getAttribute('publicationDate')||ver?.getAttribute('date')||'';
- const sha=file?.getAttribute('sha256')||'',effectiveDate=ver?.getAttribute('effectiveDate')||'';
+ const sha=file?.getAttribute('sha256')||'',effectiveDate=ver?.getAttribute('effectiveDate')||'',applicabilityDate=ver?.getAttribute('applicabilityDate')||'';
  const sourceLabel=[code,source?.getAttribute('number')?'Resmî Gazete '+source.getAttribute('number'):''].filter(Boolean).join(' · ');
  const records=[],uniqueKeys=new Set(),categories=[];let chapters=0;
  function put(record){
@@ -68,7 +68,7 @@ function parseTrXml(xml,onProgress){
    }
    if(art.getAttribute('status')==='mulga'&&!blocks.length)blocks.push({t:'Mülga',level:0});
    put({id,erules:id,title:name.trim(),kind:'IR',type:'TR legislation',subject:ctx.at(-1)?.title||'',source:sourceLabel,
-        category,path:ctx.flatMap(x=>[x.pathLabel,x.title]),applicability:'',effective:art.getAttribute('effectiveDate')||effectiveDate,parentIR:'',
+        category,path:ctx.flatMap(x=>[x.pathLabel,x.title]),applicability:applicabilityDate,effective:art.getAttribute('effectiveDate')||effectiveDate,parentIR:'',
         sourcePage:art.getAttribute('sourcePage')||'',key:'tr:'+id,blocks,plain:blocks.map(b=>b.t).join('\n'),
         legalKind:ak,legalStatus:art.getAttribute('status')||'aktif'});
  }
@@ -77,7 +77,7 @@ function parseTrXml(xml,onProgress){
    const blocks=kids(seg,'text').map(t=>({t:tidy(t.textContent),level:0})).filter(b=>b.t);
    put({id,erules:id,title:titlePart||'Bölümlendirilmiş metin '+(seg.getAttribute('order')||records.length+1),kind:'IR',type:'TR legislation',
      subject:ctx.at(-1)?.title||'',source:sourceLabel,category:ctx.at(-1)?.caption||'Genelge / Tebliğ',
-     path:ctx.flatMap(x=>[x.pathLabel,x.title]),applicability:'',effective:effectiveDate,parentIR:'',
+     path:ctx.flatMap(x=>[x.pathLabel,x.title]),applicability:applicabilityDate,effective:effectiveDate,parentIR:'',
      sourcePage:seg.getAttribute('sourcePage')||'',key:'tr:'+id,blocks,plain:blocks.map(b=>b.t).join('\n'),legalKind:'segment'});
  }
  function regAnnexes(node){
@@ -95,7 +95,7 @@ function parseTrXml(xml,onProgress){
      if(!blocks.length)blocks.push({t:'Ek içeriği',level:0});
      const heading=childText(a,'title');
      put({id,erules:id,title:'EK-'+number+' — '+heading,kind:'IR',type:'TR annex',subject:'Ekler',source:sourceLabel,
-       category:'Ekler',path:['Ekler'],applicability:'',effective:effectiveDate,parentIR:'',sourcePage:a.getAttribute('sourcePage')||'',
+       category:'Ekler',path:['Ekler'],applicability:applicabilityDate,effective:effectiveDate,parentIR:'',sourcePage:a.getAttribute('sourcePage')||'',
        key:'tr:'+id,blocks,plain:blocks.map(b=>b.t||b.rows?.map(r=>r.join(' | ')).join('\n')||'').join('\n'),legalKind:'annex'});
    }
  }
@@ -125,7 +125,7 @@ function parseTrXml(xml,onProgress){
  const versionId=familyId+'|'+(published||'undated')+'|'+fingerprint;
  onProgress?.(100,records.length+' kayıt işlendi');
  return {familyId,versionId,title,published,guid:fingerprint,source:'Türkiye mevzuatı / yapılandırılmış XML',jurisdiction:'TR',language:'tr',code,parseSchema:schemaVersion==='2.0'?5:4,records,
-   metadata:{issuer:childText(metadata,'issuer'),effectiveDate,gazetteNumber:source?.getAttribute('number')||'',sourceUrl:source?.getAttribute('url')||'',
+   metadata:{issuer:childText(metadata,'issuer'),effectiveDate,applicabilityDate,gazetteNumber:source?.getAttribute('number')||'',sourceUrl:source?.getAttribute('url')||'',
      rawSha256:sha,trSchemaVersion:schemaVersion,documentKind:cl?.getAttribute('kind')||'',documentForm:cl?.getAttribute('form')||'',documentStage:cl?.getAttribute('stage')||'',
      publicationChannel:cl?.getAttribute('publicationChannel')||''},
    stats:{total:records.length,matched:records.length,chapters,elapsedMs:0}};

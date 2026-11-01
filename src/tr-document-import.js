@@ -164,7 +164,7 @@ function makeXml(parsed,opts){
  if(!/^[A-ZÇĞİÖŞÜ0-9][A-ZÇĞİÖŞÜ0-9._\/-]{1,79}$/.test(code))throw Error('Mevzuat kodu geçersiz.');
  if((title.length<6||title.length>280)&&!(opts.kind==='genelge'&&opts.stage==='taslak'&&!title))throw Error('Mevzuat adı 6–280 karakter olmalıdır.');
  const dt=s=>{if(!s)return true;const d=new Date(s+'T00:00:00Z');return /^\d{4}-\d{2}-\d{2}$/.test(s)&&Number.isFinite(+d)&&d.toISOString().slice(0,10)===s;};
- if(!dt(opts.publicationDate)||!dt(opts.effectiveDate))throw Error('Yayım/yürürlük tarihi geçersiz.');
+ if(!dt(opts.publicationDate)||!dt(opts.effectiveDate)||!dt(opts.applicabilityDate))throw Error('Yayım, yürürlük veya uygulanabilirlik tarihi geçersiz.');
  if(!opts.publicationDate)throw Error('Mevzuatın sürüm/yayım tarihini girin.');
  const kind=opts.kind||'yonetmelik',form=opts.form||'mustakil',stage=opts.stage||'yayinlanmis',channel=opts.publicationChannel||'kurumsal';
  const doc=document.implementation.createDocument(NS,'tr:legislation',null),r=doc.documentElement;
@@ -173,7 +173,7 @@ function makeXml(parsed,opts){
  txt(doc,meta,'title',title);txt(doc,meta,'shortTitle',code);txt(doc,meta,'issuer',scrub(opts.issuer)||'Kaynak kurum');
  meta.appendChild(el(doc,'source',{type:'document-upload',publicationDate:opts.publicationDate,number:opts.gazetteNumber||'',url:opts.sourceUrl||''}));
  const f=el(doc,'file',{name:opts.filename||''});f.setAttribute('name',String(opts.filename||''));f.setAttribute('sha256',String(opts.sha256||''));meta.appendChild(f);
- meta.appendChild(el(doc,'version',{date:opts.publicationDate,mode:stage==='taslak'?'draft':'as-published',effectiveDate:opts.effectiveDate||''}));
+ meta.appendChild(el(doc,'version',{date:opts.publicationDate,mode:stage==='taslak'?'draft':'as-published',effectiveDate:opts.effectiveDate||'',applicabilityDate:opts.applicabilityDate||''}));
  meta.appendChild(el(doc,'classification',{kind,form,stage,publicationChannel:channel,budgetImpactExpected:opts.budgetImpactExpected||''}));
  if(stage==='taslak'){
    const materials=el(doc,'draftMaterials');meta.appendChild(materials);

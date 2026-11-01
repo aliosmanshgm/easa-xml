@@ -17,7 +17,7 @@ function guessOpts(ext){
  else if(/KARARNAME/.test(title))kind='cumhurbaskanligi-kararnamesi';else if(/\bKANUN\b|KANUNU/.test(title))kind='kanun';
  const frame=/DEĞİŞİKLİK\s+YAPILMASI|DEĞİŞİKLİK\s+YAPILMASINA/.test(title);
  return {code:ext.suggestions.code||'',title,kind,form:frame?'cerceve':'mustakil',stage:/TASLAĞI\b/.test(title)?'taslak':'yayinlanmis',
-   publicationChannel:ext.suggestions.gazetteNumber?'resmi-gazete':'kurumsal',publicationDate:ext.suggestions.publicationDate||'',effectiveDate:'',budgetImpactExpected:'false',articleJustifications:{},impactAnalysisRef:'',budgetImpactRef:'',
+   publicationChannel:ext.suggestions.gazetteNumber?'resmi-gazete':'kurumsal',publicationDate:ext.suggestions.publicationDate||'',effectiveDate:'',applicabilityDate:'',budgetImpactExpected:'false',articleJustifications:{},impactAnalysisRef:'',budgetImpactRef:'',
    gazetteNumber:ext.suggestions.gazetteNumber||'',issuer:'',sourceUrl:'',generalJustification:'',filename:ext.filename,sha256:ext.sha256};
 }
 function optionField(label,name,value,placeholder='',type='text',required=false){return `<label class="tr-field"><span>${e(label)}</span><input class="form-field" type="${type}" name="${name}" value="${e(value||'')}" placeholder="${e(placeholder)}" ${required?'required':''} maxlength="${name==='title'?280:240}"></label>`;}
@@ -25,6 +25,7 @@ function selectField(label,name,value,items){return `<label class="tr-field"><sp
 function editingData(){if(!session)return;const form=document.getElementById('trImportForm');if(!form)return;
  const entries=Object.fromEntries(new FormData(form)),justifications={...(session.opts.articleJustifications||{})};
  for(const key of Object.keys(entries))if(key.startsWith('aj__')){justifications[key.slice(4)]=entries[key];delete entries[key];}
+ if(Object.hasOwn(entries,'effectiveDate') && entries.effectiveDate!==session.opts.effectiveDate)session.dateTouched=true;
  session.opts={...session.opts,...entries,articleJustifications:justifications};const t=document.getElementById('trSourceText');if(t)session.text=t.value;
 }
 function statsHtml(p){const x=p.stats;return `<div class="tr-stats"><span><b>${x.books||0}</b> kitap</span><span><b>${x.parts||0}</b> kısım</span><span><b>${x.chapters||0}</b> bölüm</span><span><b>${x.articles}</b> madde</span><span><b>${x.paragraphs}</b> fıkra</span><span><b>${x.items}</b> bent</span><span><b>${x.subitems}</b> alt bent</span>${x.segments?`<span><b>${x.segments}</b> genelge bölümü</span>`:''}${x.annexes?`<span><b>${x.annexes}</b> ek</span>`:''}</div>`;}
@@ -70,6 +71,8 @@ function paint(){if(!session)return;const s=session,p=s.parsed,o=s.opts;
  ${selectField('Yayım kanalı *','publicationChannel',o.publicationChannel,[['resmi-gazete','Resmî Gazete'],['kurumsal','Kurumsal'],['diger','Diğer'],['bilinmiyor','Bilinmiyor']])}
  ${optionField('Resmî Gazete sayısı','gazetteNumber',o.gazetteNumber,'33374')}
  ${optionField('Yürürlüğe giriş tarihi','effectiveDate',o.effectiveDate,'','date')}
+ ${optionField('Uygulanabilirlik tarihi (ayrı bir tarih belirtilmişse)','applicabilityDate',o.applicabilityDate,'','date')}
+ ${s.effectiveSuggestion?.date?`<div class="tr-span-2 date-extract-note"><b>Yürürlük maddesinden hesaplanan tarih:</b> ${e(s.effectiveSuggestion.date)} · ${e(s.effectiveSuggestion.ref)} · ${e(s.effectiveSuggestion.reason)} <span>Öneri otomatik dolduruldu; belgeyi kontrol ederek onaylayın.</span></div>`:`<div class="tr-span-2 date-extract-note">Yürürlük hükmünden tek bir tarih çıkarılamadı. Yürürlüğe giriş ve varsa uygulanabilirlik tarihini belgeye göre elle girebilirsiniz.</div>`}
  ${optionField('Yayımlayan kurum','issuer',o.issuer,'İlgili kurum')}
  <div class="tr-span-2">${optionField('Kaynak bağlantısı','sourceUrl',o.sourceUrl,'https://...')}</div>
  ${o.stage==='taslak'?`<label class="tr-field tr-span-2"><span>Genel gerekçe (genelge istisnası hariç)</span><textarea name="generalJustification" class="form-field" rows="3">${e(o.generalJustification)}</textarea></label>
@@ -90,9 +93,12 @@ function paint(){if(!session)return;const s=session,p=s.parsed,o=s.opts;
  api.modal(r,false);
 }
 function collect(){const latest=document.getElementById('trSourceText')?.value,changed=latest!==undefined&&latest!==session.text;editingData();session.approved=!changed&&!!document.getElementById('trImportApproved')?.checked;session.editorOpen=!!document.querySelector('.tr-source-editor')?.open;return changed;}
-function analyzed(){const s=session,clean=s.text===s.extraction.text?s.extraction.lines:s.text;s.parsed=D.parseText(clean,{...s.opts});if(s.text!==s.extraction.text&&s.extraction.pages)s.parsed.warnings.unshift('Kaynak metni düzenlendi: PDF sayfa referansları yeniden hesaplanmaz.');}
+function analyzed(){const s=session,clean=s.text===s.extraction.text?s.extraction.lines:s.text;s.parsed=D.parseText(clean,{...s.opts});
+ s.effectiveSuggestion=root.EasaTrDates?.suggestEffective(s.parsed,s.opts.publicationDate)||null;
+ if(!s.dateTouched&&!s.opts.effectiveDate&&s.effectiveSuggestion?.date)s.opts.effectiveDate=s.effectiveSuggestion.date;
+ if(s.text!==s.extraction.text&&s.extraction.pages)s.parsed.warnings.unshift('Kaynak metni düzenlendi: PDF sayfa referansları yeniden hesaplanmaz.');}
 async function start(file){if(!api)throw Error('Mevzuat aktarım ekranı başlatılamadı.');session=null;api.modal('<h2>Word / PDF okunuyor</h2><p id="trImportProgress">Dosya yerel olarak okunuyor; henüz buluta yazılmıyor.</p><div class="progress-track"><div class="progress-fill" id="trImportProgressBar"></div></div>',true);
- try{const ext=await D.readFile(file,(percent,message)=>{const x=document.getElementById('trImportProgress'),bar=document.getElementById('trImportProgressBar');if(x)x.textContent=message;if(bar)bar.style.width=Math.min(100,percent)+'%';});session={file,extraction:ext,text:ext.text,opts:guessOpts(ext),approved:false,editorOpen:false,parsed:null};analyzed();paint();}
+ try{const ext=await D.readFile(file,(percent,message)=>{const x=document.getElementById('trImportProgress'),bar=document.getElementById('trImportProgressBar');if(x)x.textContent=message;if(bar)bar.style.width=Math.min(100,percent)+'%';});session={file,extraction:ext,text:ext.text,opts:guessOpts(ext),approved:false,editorOpen:false,parsed:null,dateTouched:false,effectiveSuggestion:null};analyzed();paint();}
  catch(err){api.modalLocked?.(false);api.close();api.error(err);session=null;}
 }
 function getXml(){if(!session)throw Error('Mevzuat henüz okunmadı.');const changed=collect();if(changed)throw Error('Kaynak metin değişti. Önce Metni yeniden analiz et seçeneğini kullanın.');analyzed();const xml=D.makeXml(session.parsed,session.opts);if(!S?.validateXml)throw Error('v2.0 doğrulama dosyası eksik: src/tr-schema.js');const report=S.validateXml(xml,{allowLegacy:false});if(!report.valid)throw Error('Yapısal doğrulama: '+report.errors.slice(0,4).map(x=>x.message).join(' · '));return xml;}
