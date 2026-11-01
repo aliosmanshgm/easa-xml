@@ -1,4 +1,4 @@
-# Havacılık Mevzuatı Hub v3.11.0
+# Havacılık Mevzuatı Hub v3.11.1
 
 **GitHub Pages + Firebase Auth/Firestore + Google Drive; EASA ve Türkiye mevzuatları için tek kullanıcı kütüphanesi.**
 
@@ -7,13 +7,25 @@ Bu sürüm, 23/2/2022 tarihli ve 5210 sayılı Cumhurbaşkanı Kararı ile kabul
 ## GitHub'a yükleme (önerilen tek yöntem)
 
 1. Mevcut uygulamanın **Hesap ve bağlantı > Katalog yedeğini indir** işlemiyle notların, yer imlerinin, şablonların ve eşleştirmelerin yedeğini al.
-2. **`config.js` dosyasının kopyasını güvenli bir yerde tut.** Paket içinde `config.js` **bulunmaz**; yalnızca `config.example.js` vardır. Firebase/GDrive bağlantı ayarlarını değiştirme.
+2. **`config.js` dosyasının kopyasını güvenli bir yerde tut.** Paket içinde `config.js` **bulunmaz**. Mevcut dosyanızı koruyun; aynı yapılandırmayı yeniden üretmeyin. Firebase/GDrive bağlantı ayarlarını değiştirme.
 3. ZIP'i aç, klasör yapısını bozmadan içindeki **`index.html`, `src` klasörünün tamamı, `.nojekyll`** ve XSD dosyalarını mevcut `easa-xml` deposuna yükle. `src` klasöründeki tüm JavaScript bileşenleri ile `src/vendor/` birlikte yüklenmeli; dosyalar yanlışlıkla `easa-xml/easa-xml/src` içine taşınmamalı.
 4. **Firebase güvenlik kurallarını yeniden yayımlama.** Dağıtım paketinde `firestore.rules` bulunmaz; mevcut güvenlik kurallarını değiştirme.
-5. GitHub Pages dağıtımını kontrol et; tarayıcıda **Ctrl + Shift + R** ile yeniden yükle. Sol menüde `v3.11.0` görülmeli.
+5. GitHub Pages dağıtımını kontrol et; tarayıcıda **Ctrl + Shift + R** ile yeniden yükle. Sol menüde `v3.11.1` görülmeli.
 6. **Mevzuat kütüphanesi, TR–EASA eşleştirmeleri, Yayın Oluşturucu ve Notlar** menülerini aç. Ardından **Mevzuat yükle → Word/PDF** işlemini test et.
 
 > Mevcut SHY-OLAY XML'ini yeniden yükleme veya silme. Firestore notları ve Google Drive arşivindeki mevcut dosyalar üzerinde otomatik toplu dönüşüm yapılmaz.
+
+## v3.11.1 – Yürürlük ve uygulanabilirlik tarihleri
+
+**Mevcut SHY-OLAY kaydını yeniden yüklemeyin.** 18/9/2026 tarihli ve 33374 sayılı Resmî Gazete'de yayımlanan SHY-OLAY'ın MADDE 28 hükmü, yayımından altı ay sonra yürürlüğe girmeyi öngörür. Uygulama bu hükümden **18/3/2027** tarihini bir **öneri** olarak hesaplar; kullanıcı kaydetmeden kesin/teyit edilmiş tarih olarak göstermez. Ayrı bir düzenleme olmaksızın “uygulanabilirlik tarihi” aynı tarihe zorlanmaz; bu alan boş kalabilir.
+
+**Mevcut kayıt için:** Kütüphane → SHY-OLAY → herhangi bir madde → **Tarihleri düzenle**. Önerilen tarih ve “MADDE 28” kaynak dayanağını gözden geçirip **Tarihleri kaydet** düğmesine basın. Aynı işlem **Sürüm yönetimi** ekranındaki ilgili TR mevzuat satırından da açılabilir. Bu işlem yalnızca kullanıcının kendi Firestore kataloğundaki sürüm üst verisini günceller; Google Drive XML/PDF/Word dosyalarına, hüküm kimliklerine, notlara veya eşleştirmelere dokunmaz. Başka cihaz aynı kayıtla çalışırken çakışma olursa kaydetme reddedilir ve buluttan yenileme istenir.
+
+**Yeni Word/PDF yüklemesinde:** İçe aktarma ekranında “Yürürlüğe giriş tarihi” ve **ayrı, isteğe bağlı** “Uygulanabilirlik tarihi” alanları bulunur. Bir mevzuatta tek ve açık bir “Yürürlük” hükmü varsa sistem tarih önerisini forma doldurur. Kademeli, farklı hükümler için farklı tarihler veya belirsiz ifadeler içeren metinlerde öneri yapılmaz; kullanıcı doğrudan resmî metne göre tarihi girmelidir. Son onay ve karşılaştırma sorumluluğu kullanıcıdadır.
+
+**Yedekleme:** Mevcut JSON katalog yedeği onaylanan tarih üst verisini içerir. Yedekten geri yüklemede yalnızca buluttaki sürümde henüz bulunmayan tarih kaydı yeniden eklenir; hâlihazırdaki tarih kaydı otomatik değiştirilmez. Tarih yedeği, kaynak mevzuatın arşiv kopyası değildir.
+
+**Teknik:** Yeni `src/tr-dates.js` modülü otomatik önerileri hesaplar. `src/cloud.js` üzerindeki `saveReleaseDates()` Firestore işlemi, yalnızca `legalDates` alanını revizyon kontrolüyle günceller. TR XML v2.0 şemalarında `applicabilityDate` isteğe bağlıdır. v1.0 kaynak XML'ler ve mevcut SHY-OLAY not kimlikleri korunur. **Yeni Firebase koleksiyonu, Drive yetkisi veya güvenlik kuralı gerekmiyor.**
 
 ## v3.11'de neler değişti?
 
@@ -53,6 +65,7 @@ Türk alfabesindeki bent etiketleri, `MADDE 9/A-`, `EK MADDE 2-`, `GEÇİCİ MAD
 - v2.0 örnek çerçeve kanun, maddesiz genelge, kitap-kısım-bölüm talimat, ekler: JS ayrıştırma kontrolü başarılı.
 - Chrome masaüstü ve mobil: menülerin tıklanabilirliği, yeni yükleme önizlemesi ve yatay taşmama testi başarılı.
 - **Canlı Firebase/Drive yüklemesi ve gerçek GitHub Pages dağıtımı test edilmedi.**
+- v3.11.1: SHY-OLAY MADDE 28 üzerinden 18/3/2027 önerisi, kullanıcı tarafından kayıt/güncelleme, Firestore revizyon kontrolü ve yeni DOCX yükleme formunda tarih önerisi Playwright ile simüle edilmiş bulut hizmetleri üzerinde test edildi. Uygulanabilirlik alanının boş bırakılması doğrulandı.
 
 ## Çevrimdışı XSD doğrulama
 

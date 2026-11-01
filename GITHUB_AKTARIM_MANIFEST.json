@@ -1,39 +1,112 @@
 {
-  "version": "3.11.0",
-  "package": "Havacilik Mevzuati Hub",
-  "deployRoot": ".",
-  "existingUserFileToPreserve": [
-    "config.js"
-  ],
-  "doNotModify": [
-    "firebase/firestore rules",
-    "Google Drive publications",
-    "previously saved notes and mappings"
+  "project": "Havacılık Mevzuatı Hub",
+  "version": "3.11.1",
+  "containsUserData": false,
+  "preserve": [
+    "config.js",
+    "Firebase ayarları ve kayıtları",
+    "Google Drive orijinal mevzuat dosyaları"
   ],
   "files": {
-    ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "KURULUM_KONTROL_LISTESI.md": "02bb6405273a8138af2dd35f2bb627c1fd15dc85c463dfb40acb6738ea31c528",
-    "README.md": "7599954236e96b8aba2d58b25b2cc345824d2df2cbc75278ae5e7baf210cbaf7",
-    "TR_Mevzuat_Semasi_v1_1.xsd": "47fe7b1055074f9c044fd34c7b05c69deb3155283c16ab0f9ab9f7731384e30d",
-    "TR_Mevzuat_Semasi_v2_0.xsd": "0572bad0f9ec8d3c3dcb88a068b3c2bb1d2a06290bacec6c70a3491d93f08f27",
-    "TR_Mevzuat_Semasi_v2_0_YeniKayit.xsd": "9f327ecdd159e7fa72e7c713b8035e4f3ad945f6c5c9d2761c25535362c2f13e",
-    "index.html": "02b23209c9c686644008ed77b1464e940221ac0a230c2a5ba077ffd2fb47ec90",
-    "src/app.js": "bb414326dea3a46a2e03e8f0b8258a40e48e5f173585cc97a372979a766ce224",
-    "src/clauses.js": "ba66a2f600b08f5ac43aa0c7aebff1ca4c1647069ae5075d630c6afb6fabddf7",
-    "src/cloud.js": "b45536e356a84bddebcc39eb69714537c898da71712102bc4da130cd6f88df14",
-    "src/mappings-ui.js": "6a7b460a94f1fb72684ca2c515080861fe4fc0a458d9c23112d923465a61f744",
-    "src/parser.js": "39ad4a9906a351541a551b6628e09d56ec4df6409161fb70547b96e76444fec1",
-    "src/parser.worker.js": "86077b24ed200d06319bebcb4f2bbe8be892c32e15529790e81eba89a76d8f68",
-    "src/publications.js": "2faaecd5054b42d1bdb7c4e4f0c5709c5aea3946553dad844d1d45c72874da3a",
-    "src/publisher-ui.js": "38cf298e634d47a9f3f35a15a35df3164bdfa506e58a3f513cad895afb24598d",
-    "src/style.css": "8a04df1c9b8ce6bd68ef25b5d98ab24917385913e8fb4565abd209188d652ceb",
-    "src/tr-document-import.js": "37a20b00399c1c3b424e0f89e1712c1767c773aa235d9aa651928c15526a2c5b",
-    "src/tr-import-ui.js": "51ac9c1bdc8829414be7f32571136d1e4bd8c328c382c08325c55e15f6cc2ee1",
-    "src/tr-parser.js": "21be83aa6e31e68991751d037d3528d6d989fa41f35993879bfca1ed12ead094",
-    "src/tr-schema.js": "a342e594bf19b8ace9f2d34d484100b32627ae5bb1b701597f29c93bd45c3e29",
-    "src/vendor/JSZip-LICENSE.md": "566c953c6090b1218ca6217dd7359d45dde46581968586dc607d59a78af6a9c4",
-    "src/vendor/jszip.min.js": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e",
-    "tools/site_kontrol.py": "3b14f14681f211325db66f547eaaa3a9a1a6af3f73c35caf72bf441492a62009",
-    "tools/tr_mevzuat_dogrula.py": "d364375948d76986e962f5849da5aa36c0d8c80773f5b052ba988cf3a7e872e4"
+    ".nojekyll": {
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "KURULUM_KONTROL_LISTESI.md": {
+      "size": 2089,
+      "sha256": "af897144324781bfac9b2893ff38ba9bf7c85f4755a887c157185456edccfff3"
+    },
+    "README.md": {
+      "size": 10079,
+      "sha256": "27cfd12d3d61a60e3a180489940b8e995a186b4070b954bada66e10695e503fa"
+    },
+    "TR_Mevzuat_Semasi_v1_1.xsd": {
+      "size": 3897,
+      "sha256": "47fe7b1055074f9c044fd34c7b05c69deb3155283c16ab0f9ab9f7731384e30d"
+    },
+    "TR_Mevzuat_Semasi_v2_0.xsd": {
+      "size": 16929,
+      "sha256": "19dada7beda35c79dde70bc507abc02c3b597242d5e82a0cea64d60da6ffc63f"
+    },
+    "TR_Mevzuat_Semasi_v2_0_YeniKayit.xsd": {
+      "size": 16944,
+      "sha256": "0318315e79fed116bf59fc4163bd9f22ab2a3c6f3b0aaaa314e1fd88269b56bb"
+    },
+    "index.html": {
+      "size": 8365,
+      "sha256": "ab05258d4250918a1a214f880c6acb7d492dd0af9c015bfd413c17f6754935de"
+    },
+    "src/app.js": {
+      "size": 123769,
+      "sha256": "a92e1617a35380b12440df5847ac31dc1b1a4ca988a9597d4decc2142a28eac7"
+    },
+    "src/clauses.js": {
+      "size": 3756,
+      "sha256": "ba66a2f600b08f5ac43aa0c7aebff1ca4c1647069ae5075d630c6afb6fabddf7"
+    },
+    "src/cloud.js": {
+      "size": 30651,
+      "sha256": "9adb70c786d98eec5e66fa29e3187d431cc8f864651f2c6e089059d58b767fc1"
+    },
+    "src/mappings-ui.js": {
+      "size": 13594,
+      "sha256": "6a7b460a94f1fb72684ca2c515080861fe4fc0a458d9c23112d923465a61f744"
+    },
+    "src/parser.js": {
+      "size": 7280,
+      "sha256": "39ad4a9906a351541a551b6628e09d56ec4df6409161fb70547b96e76444fec1"
+    },
+    "src/parser.worker.js": {
+      "size": 497,
+      "sha256": "86077b24ed200d06319bebcb4f2bbe8be892c32e15529790e81eba89a76d8f68"
+    },
+    "src/publications.js": {
+      "size": 32480,
+      "sha256": "2faaecd5054b42d1bdb7c4e4f0c5709c5aea3946553dad844d1d45c72874da3a"
+    },
+    "src/publisher-ui.js": {
+      "size": 39945,
+      "sha256": "38cf298e634d47a9f3f35a15a35df3164bdfa506e58a3f513cad895afb24598d"
+    },
+    "src/style.css": {
+      "size": 53364,
+      "sha256": "5b6b3b0465b248f8547d987ec388368c4775fa295818e9ae2066cde0233a65aa"
+    },
+    "src/tr-dates.js": {
+      "size": 4973,
+      "sha256": "f3439a33b3facca7dd470bc128d71054d7588326342abfb36bd26830f8eac3ef"
+    },
+    "src/tr-document-import.js": {
+      "size": 26555,
+      "sha256": "500cce5428964f5b0b70c2375b5c01a1396934f3561d4d520be8a08fcfa4a130"
+    },
+    "src/tr-import-ui.js": {
+      "size": 17492,
+      "sha256": "bb243aace8bad85c99bf18ea6c7e8ec683d354069b1c53b61aaabeafd6649086"
+    },
+    "src/tr-parser.js": {
+      "size": 9786,
+      "sha256": "d8b7b5c0772acbbcc80180f3c68906f637caf62bd44af08b2863fd28b409b852"
+    },
+    "src/tr-schema.js": {
+      "size": 12850,
+      "sha256": "c801960ffdefb0a94879a2888f2fa5a634ded74da50a1a977f0e025d3f2a2a08"
+    },
+    "src/vendor/JSZip-LICENSE.md": {
+      "size": 33753,
+      "sha256": "566c953c6090b1218ca6217dd7359d45dde46581968586dc607d59a78af6a9c4"
+    },
+    "src/vendor/jszip.min.js": {
+      "size": 97630,
+      "sha256": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e"
+    },
+    "tools/site_kontrol.py": {
+      "size": 1195,
+      "sha256": "b54fbc01a7124e9de9f03d5c178f1614ae7f46d507bac89e3db8d7882b5d7037"
+    },
+    "tools/tr_mevzuat_dogrula.py": {
+      "size": 15321,
+      "sha256": "d364375948d76986e962f5849da5aa36c0d8c80773f5b052ba988cf3a7e872e4"
+    }
   }
 }
