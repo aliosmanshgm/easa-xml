@@ -1,38 +1,40 @@
-# Havacılık Mevzuatı Hub v3.10.2 — Fıkra / Bent / Alt Bent Notları
+# Havacılık Mevzuatı Hub v3.10.3
 
-## Kapsam
+## Gerekçe
 
-Mevcut v3.10.1 üzerine kuruludur. Mevcut Google Drive ve Firebase dosyalarına müdahale etmeden Türkiye mevzuatı için daha erişilebilir, ayrı not alma kontrolleri sunar.
+Mevcut bir Türkiye mevzuatı sürümünde bent ve alt bent notlarının görünmemesi iki farklı nedenle oluşabilir:
+- Eski `index.html`/`src/app.js` veya önbelleğe alınmış JavaScript dosyalarının çalışması.
+- Kayıtlı mevzuatın işlenmiş bloklarında açık fıkra-bent-alt bent seviye bilgisinin bulunmaması veya Firebase katalog şemasının geride kalması.
 
-- Fıkra `(1)`, bent `a)` ve alt bent `1)` için ayrı, görünür **Not ekle / Notu düzenle** düğmeleri.
-- İlgili maddenin altında genişletilebilir **Fıkra, bent ve alt bent notları** rehberi; her satır ilgili not editörünü açar.
-- Not editöründe tam kimlik yolu görünür: `(1) › s) › 2)`.
-- Notlar eskisi gibi Firestore'da ilgili maddenin `subnotes` alanında saklanır. Yeni koleksiyon, güvenlik kuralı veya veri taşıma işlemi gerekmez.
-- Önceden kaydedilmiş madde / fıkra notları, yer imleri, XML sürümleri ve TR–EASA eşleştirmeleri korunur.
-- Note editöründeki kaynak metin parmak izi yeni sürümlerde değişiklik uyarısı için kullanılmaya devam eder.
-- Word, PDF, Kindle ve EPUB dışa aktarma motorları değiştirilmemiştir; mevcut `subnotes` alanını kullanmaya devam eder.
+## Düzeltmeler
 
-## Kurulum
+- Mevcut Türkiye mevzuatının not hedefleri artık yalnızca Firebase `schema` sayısına göre değil, gerçekte kayıtlı ve açıkça seviyelendirilmiş hiyerarşiye göre açılır. Belirsiz seviyelerde yanlış hükme not bağlanmasını önlemek için düzey bilgisi olmayan kayıtlar otomatik olarak güvenilir sayılmaz.
+- Mevzuat okuyucusunda not hedeflerinin fıkra/bent/alt bent sayıları ile arayüz kodu ve katalog şema bilgisi görüntülenir.
+- **Buluttan yenile:** Seçilen sürümün *yalnızca bu tarayıcıdaki işlenmiş veri önbelleğini* siler ve Google Drive'daki aynı işlenmiş dosyayı yeniden indirir. Orijinal XML/PDF, Firestore notları, yer imleri, eşleştirmeler ve rapor şablonları değiştirilmez.
+- Gerçek hiyerarşi eksikse ve saklanan orijinal XML mevcutsa **XML hiyerarşisini güncelle** işlevi kullanılabilir. Bu işlem Google Drive'da yeni işlenmiş veri dosyası oluşturup katalog işaretçisini günceller; sürüm kimliğini korur. Katalog güncellemesinden önce orijinal XML'in kimliği doğrulanır. Buluttaki canlı ortamda ilk çalıştırmadan önce JSON yedeği alınması önerilir.
+- `index.html` ve `src/app.js` sürümleri farklıysa açılış uyarısı görünür; kaynak URL'lerinde `?v=3.10.3` kullanılır.
 
-`HUB_v3_10_2_fix.zip` arşivindeki **üç** dosyayı GitHub deposunun birebir aynı yollarına yükleyip üzerine yazın:
+## Kurulum (GitHub Pages)
 
+`HUB_v3_10_3_Guncelleme.zip` içerisindeki 3 dosyayı aynı isim ve yolla üzerine yazın:
 - `index.html`
 - `src/app.js`
 - `src/style.css`
 
-Diğer dosyaları silmeyin. Özellikle `config.js`, `src/tr-parser.js`, `src/mappings-ui.js`, `src/cloud.js`, `src/clauses.js`, `src/tr-import-ui.js` ve `src/tr-document-import.js` **aynen korunmalıdır**.
+**Silinmemesi gerekenler:** `config.js`, `src/cloud.js`, `src/clauses.js`, `src/tr-parser.js`, `src/mappings-ui.js`, `src/tr-import-ui.js`, `src/tr-document-import.js`, orijinal XML ve PDF dosyaları, Firestore kayıtları. Tam kaynak paketi de gereken tüm uygulama modüllerini içerir; gerçek `config.js` dosyasını içermez.
 
-Ardından GitHub Pages sayfasını `Ctrl + Shift + R` ile önbelleksiz yenileyin. Mobil cihazda site verisi eski kalırsa sayfayı yeniden yükleyin.
+## SHY-OLAY testi
 
-## Kullanım
+1. GitHub Pages üzerinde sol altta `v3.10.3` yazdığını doğrulayın ve `Ctrl + Shift + R` ile önbelleksiz yenileyin.
+2. Kütüphane > SHY-OLAY > MADDE 4 - Tanımlar ve kısaltmalar maddesini açın.
+3. "Not hedefleri" satırında **2 fıkra · 30 bent · 3 alt bent** sayıları beklenir. Bu sayılar kullanıcının daha önce kaydettiği SHY-OLAY içeriğine göre değişebilir; referans test verisinde bu değerler doğrulanmıştır.
+4. `(1)`, `s)` ve `s) > 2)` için bağımsız "Not ekle" düğmelerini deneyin.
+5. Sayılar eksikse önce **Buluttan yenile**, hâlâ eksikse **XML hiyerarşisini güncelle** düğmesini (görünüyorsa) kullanın. Mevzuat sürümünü silmeyin veya mükerrer yüklemeyin.
+6. Not eklemeden önce JSON yedeğini almak veri emniyeti açısından faydalıdır. Başka cihazda görünürlüğü doğrulamak için aynı Google hesabıyla giriş yapın.
 
-1. Kütüphaneden `SHY-OLAY` → `MADDE 4` açın.
-2. `(1)` fıkrası, `s)` bendi veya onun altındaki `2)` alt bendinin yanındaki **Not ekle** düğmesine tıklayın.
-3. İsterseniz metnin altındaki **Fıkra, bent ve alt bent notları** başlığını açıp `(1) › s) › 2)` satırından ilgili editöre geçin.
-4. Notu yazıp **Kaydet**'e basın. Aynı maddedeki diğer notlar ve genel madde notu ayrı ayrı korunur.
+## Teknik doğrulama
 
-## Teknik kontrol
-
-Kaynak olarak yüklenmiş SHY-OLAY XML'i ile **MADDE 4** test edilmiştir: 2 fıkra, 30 bent, 3 alt bent; 35 ayrı not hedefi. Node.js kod doğrulaması ve ayrı seviyelere not kaydetme/önceden mevcut fıkra notunu koruma testleri başarılıdır.
-
-**Sınır:** Gerçek Firebase/Drive hesabında otomatik canlı test yapılmamıştır. Bu çalışma ortamındaki Chromium, yönetim politikasıyla yerel sayfaları açmayı engellediği için gerçek tarayıcı üzerinde görsel uçtan uca test gerçekleştirilememiştir. GitHub Pages dağıtımında ilk kontrol kullanıcı ortamında yapılmalıdır.
+- `node --check` (tüm uygulama JS dosyaları)
+- Gerçek SHY-OLAY MADDE 4 blokları üzerinde 2 fıkra, 30 bent, 3 alt bent için toplam 35 bağımsız not hedefi; v3.10.2 ile kayıtlı genel not/bent notu kimliklerinin korunması.
+- Katalog `schema=3` olsa bile açık seviyelerle not izninin verilmesi; belirsiz seviyelerde otomatik not izninin kapalı tutulması.
+- Tarayıcıda canlı Firebase/Drive bağlantısı bu çalışma ortamında test edilmedi; HTTP istekleri üzerinde Chromium yönetici politikası nedeniyle görsel QA yapılamadı.
