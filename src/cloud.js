@@ -418,24 +418,29 @@
     const mime=compressed?'application/gzip':'application/json';
     progress(1,'İşlenmiş mevzuat Google Drive’a yükleniyor…');
     const uploaded=await uploadBlob(`${name}.json${compressed?'.gz':''}`,new Blob([binary],{type:mime}),mime,folders.dataId,n=>progress(5+Math.round(n*.85),'İşlenmiş veri yükleniyor…'));
-    const updated={...previous,dataFileId:uploaded.id,dataHash,dataBytes:binary.byteLength,dataCompressed:compressed,count:parsedDoc.records.length,stats:parsedDoc.stats,schema:4,reindexedAt:new Date().toISOString()};
+    const processedBackups=[...new Set([...(previous.processedBackups||[]),previous.dataFileId].filter(Boolean))];
+    const updated={...previous,dataFileId:uploaded.id,dataHash,dataBytes:binary.byteLength,dataCompressed:compressed,count:parsedDoc.records.length,stats:parsedDoc.stats,schema:4,reindexedAt:new Date().toISOString(),processedBackups};
     try {
       progress(92,'Firebase sürüm kaydı güvenli biçimde güncelleniyor…');
-      await modules.fs.setDoc(doc('releases',await sha256(previous.versionId)),updated,{merge:false});
+      const ref=doc('releases',await sha256(previous.versionId));
+      await modules.fs.runTransaction(firestore,async tx=>{
+        const snap=await tx.get(ref);
+        if(!snap.exists()||snap.data().dataFileId!==previous.dataFileId)throw Error('Mevzuat başka bir cihazda güncellenmiş. Buluttan yenileyip yeniden kontrol edin.');
+        tx.set(ref,updated);
+      });
     } catch(e) {
       try{await deleteDriveFile(uploaded.id);}catch(cleanError){console.warn('İşlenmiş geçici dosya silinemedi',cleanError);}
       throw firestoreError(e);
     }
-    progress(98,'Eski işlenmiş veri temizleniyor…');
-    try{if(previous.dataFileId&&previous.dataFileId!==uploaded.id)await deleteDriveFile(previous.dataFileId);}
-    catch(e){console.warn('Eski işlenmiş dosya silinemedi; yeni veri aktif',e);updated.cleanupWarning=true;}
+    progress(98,'Önceki işlenmiş veri geri dönüş için Drive’da saklanıyor…');
+    // Non-destructive: previous processed file is retained for rollback.
     progress(100,'Yeniden indeksleme tamamlandı.');return updated;
   }
   async function removeVersion(row) {
     ensureLogin();ensureDrive();
     const id=await sha256(row.versionId);
     await modules.fs.deleteDoc(doc('releases',id));
-    const results=await Promise.allSettled([deleteDriveFile(row.rawFileId),deleteDriveFile(row.dataFileId),deleteDriveFile(row.sourceFileId)]);
+    const results=await Promise.allSettled([deleteDriveFile(row.rawFileId),deleteDriveFile(row.dataFileId),deleteDriveFile(row.sourceFileId),...(row.processedBackups||[]).map(deleteDriveFile)]);
     return {orphaned:results.filter(r=>r.status==='rejected').length};
   }
   function folderUrl(folderId){return folderId?`https://drive.google.com/drive/u/0/folders/${encodeURIComponent(folderId)}`:'';}

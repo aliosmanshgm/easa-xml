@@ -308,3 +308,12 @@
 .clause-status{display:flex;flex-wrap:wrap;align-items:center;gap:7px 14px;padding:9px 12px;margin:5px 0 14px;border:1px solid #cfe1e8;border-radius:9px;background:#f3fafb;color:#355968;font-family:Inter,"Segoe UI",sans-serif;font-size:11px;line-height:1.5}
 .clause-status small{font-size:10px;color:#668895}
 @media(max-width:690px){.clause-status{flex-direction:column;align-items:flex-start;gap:4px}}
+
+/* v3.10.4 - real-source article hierarchy validation */
+.clause-status{flex-wrap:wrap;gap:9px}
+.clause-status .btn{margin-left:auto}
+.hierarchy-hint.is-missing-bents{border-left:3px solid #c68f40;background:#fff8eb;color:#80531b}
+.hierarchy-compare-warning{margin:14px 0;padding:12px 15px;border:1px solid #e9c9a1;border-radius:9px;background:#fff8ec;color:#815421}
+.hierarchy-compare-warning ul{margin:8px 0 0 20px;padding:0}
+.hierarchy-compare-warning li{margin-bottom:5px}
+@media(max-width:690px){.clause-status .btn{width:100%;margin-left:0}}
