@@ -317,3 +317,16 @@
 .hierarchy-compare-warning ul{margin:8px 0 0 20px;padding:0}
 .hierarchy-compare-warning li{margin-bottom:5px}
 @media(max-width:690px){.clause-status .btn{width:100%;margin-left:0}}
+/* v3.11: document type/schema checks within Word/PDF review */
+.tr-validation-inline {margin:14px 0 18px;padding:13px 15px;border:1px solid var(--border,#d1dce5);border-radius:9px;background:var(--surface,#f7fafb);line-height:1.5;font-size:13px;color:var(--ink,#203447)}
+.tr-validation-inline.is-valid{border-left:4px solid #21847b}
+.tr-validation-inline.is-invalid{border-left:4px solid #c15f52}
+.tr-validation-inline small{font-size:12px;color:var(--muted,#607687)}
+.tr-validation-inline ul{padding-left:20px;margin:8px 0}
+.tr-validation-inline details{margin-top:8px}
+.tr-form-grid select.form-field{width:100%;min-width:0;appearance:auto}
+.tr-form-grid textarea.form-field{width:100%;resize:vertical;min-height:78px}
+
+.tr-draft-guidance{padding:12px;border-radius:8px;background:var(--surface-secondary,#f3f7fa);border:1px solid var(--border,#d5e0e7)}
+.tr-draft-guidance p{font-size:12px;margin:5px 0 12px;color:var(--muted,#667b87)}
+.tr-draft-guidance .tr-field{margin-bottom:10px}

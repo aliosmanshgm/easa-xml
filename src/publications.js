@@ -88,7 +88,7 @@ function prepare({doc,picks,annotations,options={}}){
   const title=trim(options.title)||doc.title.replace(/^Easy Access Rules for\s*/i,'')+' - Secilmis Mevzuat',
         subtitle=trim(options.subtitle),count=sections.length;
   return {title,subtitle,sourceTitle:doc.title,published:doc.published||'',versionId:doc.versionId||'',familyId:doc.familyId||'',
-    generatedAt:new Date().toISOString(),options:o,sections,count,selectedCount:picks.length,autoCount:count-picks.length};
+    generatedAt:new Date().toISOString(),options:o,sections,count,hasTR:String(doc.familyId||'').startsWith('tr-'),language:String(doc.familyId||'').startsWith('tr-')?'tr':'en',selectedCount:picks.length,autoCount:count-picks.length};
 }
 // The original prepare() remains supported for v3.6/v3.7 consumers.
 // Each source is pinned to its exact XML release; no source is silently substituted.
@@ -107,18 +107,18 @@ function prepareMulti({sources,annotations,options={}}){
  }
  if(!parts.length)throw Error('Derleme için seçilmiş madde yok.');
  const refs=parts.map(({doc})=>({familyId:doc.familyId,versionId:doc.versionId,title:doc.title,published:doc.published||''}));
- const multi=refs.length>1;
+ const multi=refs.length>1;const hasTR=refs.some(r=>r.familyId.startsWith('tr-'));const hasEASA=refs.some(r=>r.familyId.startsWith('easa-'));const language=hasTR&&hasEASA?'mul':hasTR?'tr':'en';
  const sections=parts.flatMap(({doc,prepared})=>prepared.sections.map(sec=>({...sec,
    publicationFamilyId:doc.familyId,publicationVersionId:doc.versionId,
    publicationTitle:doc.title,publicationPublished:doc.published||''})));
  const count=sections.length;
  if(count>500)throw Error('İlişkili hükümlerle birlikte derleme çok büyük. Madde seçimini daraltın.');
  const common=parts[0].prepared;
- return {...common,title:trim(options.title)||(multi?'Tematik EASA Mevzuat Derlemesi':common.title),
-  subtitle:trim(options.subtitle),sourceTitle:multi?refs.length+' EASA mevzuat yayını':refs[0].title,
+ return {...common,title:trim(options.title)||(multi?'Tematik Havacılık Mevzuatı Derlemesi':common.title),
+  subtitle:trim(options.subtitle),sourceTitle:multi?refs.length+' mevzuat yayını':refs[0].title,
   familyId:multi?'multi':refs[0].familyId,versionId:multi?'multi':refs[0].versionId,
   published:multi?'':refs[0].published,generatedAt:new Date().toISOString(),
-  sections,sourceRefs:refs,multi,count,selectedCount:total,
+  sections,sourceRefs:refs,multi,hasTR,language,count,selectedCount:total,
   autoCount:parts.reduce((sum,x)=>sum+x.prepared.autoCount,0)};
 }
 const sourceCaption = s=>s.publicationTitle? s.publicationTitle+' | '+fallbackDate(s.publicationPublished):'';
@@ -130,10 +130,10 @@ function makeText(model,markdown=false){
  const lines=[];const hdr=(s,level=1)=>markdown?'#'.repeat(level)+' '+s:s;
  lines.push(hdr(model.title),model.subtitle||'',model.sourceTitle+' | '+fallbackDate(model.published),
    'Generated: '+fallbackDate(model.generatedAt),'',
-   'Source: EASA eRules. Personal annotations are NOT part of the original regulation.','',sourceSummary(model),'');
+   'Kaynak: Seçilmiş resmî mevzuat yayınları. Kişisel notlar özgün düzenleme metnine dahil değildir.','',sourceSummary(model),'');
  for(let i=0;i<model.sections.length;i++){
    const sec=model.sections[i];lines.push(hdr(sec.title,2));if(sec.publicationTitle)lines.push('PUBLICATION: '+sourceCaption(sec));
-   if(model.options.includeMetadata)lines.push('['+sec.kind+'] '+sec.category+' | '+(sec.source||'EASA eRules'));
+   if(model.options.includeMetadata)lines.push('['+sec.kind+'] '+sec.category+' | '+(sec.source||'Mevzuat kaynağı'));
    for(const b of sec.blocks){
      if(b.type==='heading'){lines.push(markdown?'### '+b.text:b.text);continue;}
      if(b.type==='table'){for(const cells of b.rows)lines.push(cells.join(' | '));lines.push('');continue;}
@@ -165,9 +165,9 @@ function renderContentHtml(model,printProfile='a4',standalone=true){
   return `<section class="rule" id="r${i+1}"><h2>${html(s.title)}</h2>${s.publicationTitle?`<p class="rule-meta"><b>Publication:</b> ${html(sourceCaption(s))}</p>`:''}${model.options.includeMetadata?`<p class="rule-meta">${html(s.kind)} | ${html(s.category)} | ${html(s.source)} | Applicable: ${html(s.applicability||'-')}</p>`:''}<div class="rule-content ${wideNotes?'note-layout':''}">${content}</div>${s.note?note('PERSONAL RULE NOTE',s.note):''}</section>${notes}`;
  };
  const contents=model.sections.map((s,i)=>`<div class="toc-item"><span>${i+1}.</span><a href="#r${i+1}">${html(s.title)}${model.multi?`<small style="display:block;color:#708596">${html(s.publicationTitle)}</small>`:''}</a></div>`).join('');
- const markup=`<div class="actions"><span>eRules Hub | ${printProfile==='a4'?'A4 PDF':wideNotes?'Kindle - handwriting':kindle?'Kindle - reading':'Preview'}</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div><div class="print-sheet"><header class="cover"><div class="kicker">EASA eRULES | CUSTOM COMPILATION</div><h1>${html(model.title)}</h1>${model.subtitle?`<p>${html(model.subtitle)}</p>`:''}<p class="muted">Source publications:<br>${html(sourceSummary(model)).replace(/\n/g,'<br>')}<br>Compilation: ${html(fallbackDate(model.generatedAt))}</p><div class="notice">Selected extracts from EASA eRules. User annotations, if present, are clearly marked and are not part of the legal text. Confirm applicability and current status against official sources.</div></header><nav class="toc" role="doc-toc"><h2>Contents</h2>${contents}</nav>${model.sections.map(section).join('')}<section class="source-appendix"><h2>Source XML identifiers</h2><p>${html(sourceSummary(model,true))}</p></section><p class="nav-hint">Selected excerpts are pinned to the source XML releases listed above.</p></div>`;
+ const markup=`<div class="actions"><span>eRules Hub | ${printProfile==='a4'?'A4 PDF':wideNotes?'Kindle - handwriting':kindle?'Kindle - reading':'Preview'}</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div><div class="print-sheet"><header class="cover"><div class="kicker">${model.hasTR?'TR / EASA MEVZUATI':'EASA eRULES'} | CUSTOM COMPILATION</div><h1>${html(model.title)}</h1>${model.subtitle?`<p>${html(model.subtitle)}</p>`:''}<p class="muted">Source publications:<br>${html(sourceSummary(model)).replace(/\n/g,'<br>')}<br>Compilation: ${html(fallbackDate(model.generatedAt))}</p><div class="notice">Selected regulatory excerpts. User annotations are not part of the legal text. Check each provision's source, version, effective date and jurisdiction against official publications.</div></header><nav class="toc" role="doc-toc"><h2>Contents</h2>${contents}</nav>${model.sections.map(section).join('')}<section class="source-appendix"><h2>Source XML identifiers</h2><p>${html(sourceSummary(model,true))}</p></section><p class="nav-hint">Selected excerpts are pinned to the source XML releases listed above.</p></div>`;
  if(!standalone)return markup;
- return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${html(model.title)}</title><style>${css}</style></head><body>${markup}</body></html>`;
+ return `<!doctype html><html lang="${model.hasTR?'tr':'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${html(model.title)}</title><style>${css}</style></head><body>${markup}</body></html>`;
 }
 function docxParagraph(text,style='Normal',options={}){
  const indent=options.level?`<w:ind w:left="${(options.level||0)*400}"/>`:'';
@@ -184,7 +184,7 @@ function docxContents(model){return model.sections.map((s,i)=>`<w:p><w:pPr><w:pS
 function docxStyles(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="21"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="310" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:rPr><w:b/><w:sz w:val="48"/><w:color w:val="18374B"/></w:rPr><w:pPr><w:spacing w:before="300" w:after="280"/></w:pPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:outlineLvl w:val="0"/><w:spacing w:before="260" w:after="170"/></w:pPr><w:rPr><w:b/><w:sz w:val="31"/><w:color w:val="234B5D"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="25"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Subtitle"><w:name w:val="Subtitle"/><w:basedOn w:val="Normal"/><w:rPr><w:i/><w:color w:val="536C7B"/><w:sz w:val="24"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Meta"><w:name w:val="Metadata"/><w:basedOn w:val="Normal"/><w:rPr><w:sz w:val="18"/><w:color w:val="5E7382"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Annotation"><w:name w:val="Personal annotation"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="400"/><w:spacing w:before="110" w:after="120"/></w:pPr><w:rPr><w:i/><w:color w:val="466E7C"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="TOC1"><w:name w:val="TOC 1"/><w:basedOn w:val="Normal"/></w:style><w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:rPr><w:color w:val="176B84"/><w:u w:val="single"/></w:rPr></w:style></w:styles>`;}
 async function createDocx(model){
  const zip=getZip(),w='word/';let body='';
- body+=docxParagraph('EASA eRULES | SELECTED COMPILATION','Meta')+docxParagraph(model.title,'Title');
+ body+=docxParagraph((model.hasTR?'TR / EASA MEVZUATI':'EASA eRULES')+' | SELECTED COMPILATION','Meta')+docxParagraph(model.title,'Title');
  if(model.subtitle)body+=docxParagraph(model.subtitle,'Subtitle');
  body+=docxParagraph(model.sourceTitle,'Meta')+docxParagraph('Source XML versions:','Meta')+docxParagraph(sourceSummary(model),'Meta')+
  docxParagraph('Generated: '+fallbackDate(model.generatedAt),'Meta')+
@@ -217,7 +217,7 @@ async function createDocx(model){
  zip.file('docProps/core.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xml(model.title)}</dc:title><dc:creator>eRules Hub</dc:creator><dc:description>Extracted from ${xml(sourceSummary(model))}</dc:description><dcterms:created xsi:type="dcterms:W3CDTF">${model.generatedAt}</dcterms:created></cp:coreProperties>`);
  return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
 }
-function epubSection(s,i){
+function epubSection(s,i,lang){
  let body='';for(const b of s.blocks){
   if(b.type==='heading'){body+=`<h3>${html(b.text)}</h3>`;continue;}
   if(b.type==='table'){body+='<table>'+b.rows.map(cells=>'<tr>'+cells.map(c=>'<td>'+html(c)+'</td>').join('')+'</tr>').join('')+'</table>';continue;}
@@ -225,21 +225,21 @@ function epubSection(s,i){
   else body+=`<p class="text level-${Math.min(5,b.level||0)}">${html(b.text)}</p>`;
  }
  if(s.note)body+=`<aside class="personal">PERSONAL RULE NOTE: ${html(s.note)}</aside>`;
- return `<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>${html(s.title)}</title><link rel="stylesheet" href="style.css" type="text/css" /></head><body><h1>${html(s.title)}</h1>${s.publicationTitle?`<p class="metadata">Publication: ${html(sourceCaption(s))}</p>`:''}${s.kind||s.source?`<p class="metadata">${html(s.kind)} | ${html(s.source)}</p>`:''}${body}</body></html>`;
+ return `<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="${lang}"><head><title>${html(s.title)}</title><link rel="stylesheet" href="style.css" type="text/css" /></head><body><h1>${html(s.title)}</h1>${s.publicationTitle?`<p class="metadata">Publication: ${html(sourceCaption(s))}</p>`:''}${s.kind||s.source?`<p class="metadata">${html(s.kind)} | ${html(s.source)}</p>`:''}${body}</body></html>`;
 }
-async function createEpub(model){
+async function createEpub(model){const lang=model.language|| (model.hasTR?'tr':'en');
  const zip=getZip();zip.file('mimetype','application/epub+zip',{compression:'STORE'});
  zip.file('META-INF/container.xml',`<?xml version="1.0" encoding="UTF-8"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>`);
  const uid='urn:uuid:'+('00000000-0000-4000-8000-'+Array.from(new TextEncoder().encode(model.title+'|'+model.generatedAt+'|'+(model.sourceRefs||[]).map(r=>r.versionId).join('|'))).reduce((a,n)=>((a*33+n)>>>0),5381).toString(16).padStart(12,'0'));
  const navItems=model.sections.map((s,i)=>`<li><a href="s${i+1}.xhtml">${html(s.title)}</a></li>`).join('');
- zip.file('OEBPS/nav.xhtml',`<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en"><head><title>Contents</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body><nav epub:type="toc" id="toc"><h1>Contents</h1><ol>${navItems}</ol></nav></body></html>`);
- zip.file('OEBPS/title.xhtml',`<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>${html(model.title)}</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body><h1>${html(model.title)}</h1>${model.subtitle?'<h2>'+html(model.subtitle)+'</h2>':''}<p>${html(sourceSummary(model)).replace(/\n/g,'<br/>')}</p><p class="metadata">Personal annotations are not part of the regulation. Verify current legal applicability.</p><h3>Source XML identifiers</h3><p class="metadata">${html(sourceSummary(model,true)).replace(/\n/g,'<br/>')}</p></body></html>`);
+ zip.file('OEBPS/nav.xhtml',`<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="${lang}"><head><title>Contents</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body><nav epub:type="toc" id="toc"><h1>Contents</h1><ol>${navItems}</ol></nav></body></html>`);
+ zip.file('OEBPS/title.xhtml',`<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="${lang}"><head><title>${html(model.title)}</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body><h1>${html(model.title)}</h1>${model.subtitle?'<h2>'+html(model.subtitle)+'</h2>':''}<p>${html(sourceSummary(model)).replace(/\n/g,'<br/>')}</p><p class="metadata">Personal annotations are not part of the regulation. Verify current legal applicability.</p><h3>Source XML identifiers</h3><p class="metadata">${html(sourceSummary(model,true)).replace(/\n/g,'<br/>')}</p></body></html>`);
  zip.file('OEBPS/toc.ncx',`<?xml version="1.0" encoding="utf-8"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><head><meta name="dtb:uid" content="${uid}"/></head><docTitle><text>${html(model.title)}</text></docTitle><navMap>${model.sections.map((s,i)=>`<navPoint id="nav${i+1}" playOrder="${i+1}"><navLabel><text>${html(s.title)}</text></navLabel><content src="s${i+1}.xhtml"/></navPoint>`).join('')}</navMap></ncx>`);
  zip.file('OEBPS/style.css',`body{font-family:serif;line-height:1.6;color:#172936}h1,h2,h3{font-family:sans-serif;line-height:1.3}h1{font-size:1.45em;margin:1em 0 .4em}h3{font-size:1.12em}p{margin:0 0 .7em;white-space:pre-wrap}.metadata{font:small sans-serif;color:#5e6c75}.clause{margin:.6em 0}.clause .marker{display:inline-block;width:2.4em;font-weight:bold}.clause p{display:inline;white-space:pre-wrap}.level-1{margin-left:1.2em}.level-2{margin-left:2.4em}.level-3{margin-left:3.6em}.level-4{margin-left:4.8em}.level-5{margin-left:6em}.personal{display:block;margin:.7em 0;padding:.6em;border-left:.2em solid #9baeb8;color:#415f70;font-size:.9em;white-space:pre-wrap}table{border-collapse:collapse;width:100%}td{border:1px solid #b7c5c9;padding:.35em;vertical-align:top}`);
- for(let i=0;i<model.sections.length;i++)zip.file('OEBPS/s'+(i+1)+'.xhtml',epubSection(model.sections[i],i));
+ for(let i=0;i<model.sections.length;i++)zip.file('OEBPS/s'+(i+1)+'.xhtml',epubSection(model.sections[i],i,lang));
  const manifest=`<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/><item id="toc" href="toc.ncx" media-type="application/x-dtbncx+xml"/><item id="style" href="style.css" media-type="text/css"/>`+model.sections.map((_,i)=>`<item id="sec${i+1}" href="s${i+1}.xhtml" media-type="application/xhtml+xml"/>`).join('');
  const spine=`<itemref idref="title"/>`+model.sections.map((_,i)=>`<itemref idref="sec${i+1}"/>`).join('');
- zip.file('OEBPS/content.opf',`<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pubid" xml:lang="en"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pubid">${uid}</dc:identifier><dc:title>${html(model.title)}</dc:title><dc:language>en</dc:language><dc:creator>eRules Hub</dc:creator><meta property="dcterms:modified">${model.generatedAt.replace(/\.\d{3}Z$/,'Z')}</meta></metadata><manifest>${manifest}</manifest><spine toc="toc">${spine}</spine></package>`);
+ zip.file('OEBPS/content.opf',`<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pubid" xml:lang="${lang}"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="pubid">${uid}</dc:identifier><dc:title>${html(model.title)}</dc:title><dc:language>${lang}</dc:language><dc:creator>eRules Hub</dc:creator><meta property="dcterms:modified">${model.generatedAt.replace(/\.\d{3}Z$/,'Z')}</meta></metadata><manifest>${manifest}</manifest><spine toc="toc">${spine}</spine></package>`);
  return zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
 }
 root.EasaPublication={prepare,prepareMulti,makeText,renderContentHtml,createDocx,createEpub,filename,safeName,findRelated,publicationOutline};

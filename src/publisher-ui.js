@@ -206,7 +206,7 @@ function updateSummary(){const node=root.document.getElementById('pubSummary');i
  statusPanel();}
 async function render(){const stamp=++renderStamp,screen=root.document.getElementById('screen'),families=sourceFamilies();
  if(!bridge?.loggedIn()){screen.innerHTML='<div class="pub-initial"><h1>Yayın Oluşturucu</h1><p>Mevzuat derlemek için Google hesabınızla giriş yapın.</p><button type="button" class="btn primary" data-action="signin">Google ile giriş</button></div>';return;}
- await loadSaved();if(!families.length){screen.innerHTML='<div class="pub-initial"><h1>Yayın Oluşturucu</h1><p>Bulutta EASA XML yayını yok. Önce mevzuat kütüphanesine XML yükleyin.</p><button class="btn primary" data-action="go-library">Kütüphaneye dön</button></div>'+savedPanel();return;}
+ await loadSaved();if(!families.length){screen.innerHTML='<div class="pub-initial"><h1>Yayın Oluşturucu</h1><p>Bulutta henüz mevzuat yayını yok. Önce EASA veya yapılandırılmış TR mevzuatı XML dosyası yükleyin.</p><button class="btn primary" data-action="go-library">Kütüphaneye dön</button></div>'+savedPanel();return;}
  if(!families.some(f=>f.id===s.familyId))s.familyId=families[0].id;
  const family=families.find(f=>f.id===s.familyId);
  if(!family.releases.some(r=>r.versionId===s.releaseId)){s.releaseId=family.active||family.releases[0].versionId;}

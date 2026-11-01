@@ -65,6 +65,6 @@
   }
   function noteText(v){return typeof v==='string'?v:(v&&typeof v.text==='string'?v.text:'');}
   function countNotes(annotation){return Object.values(annotation?.subnotes||{}).filter(v=>noteText(v).trim()).length;}
-  root.EasaClauses={outline,marker,fingerprint,noteText,countNotes,version:'3.10.5'};
+  root.EasaClauses={outline,marker,fingerprint,noteText,countNotes,version:'3.11.0'};
   if (typeof module!=='undefined' && module.exports) module.exports=root.EasaClauses;
 })(typeof globalThis!=='undefined'?globalThis:this);
