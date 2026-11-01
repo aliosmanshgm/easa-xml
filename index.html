@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#102137">
 <meta name="description" content="EASA ve Türkiye havacılık mevzuatı: GitHub Pages, Firebase ve Google Drive ile çalışan dijital mevzuat kütüphanesi">
 <title>Havacılık Mevzuatı Hub | Bulut Mevzuat Kütüphanesi</title>
-<link rel="stylesheet" href="./src/style.css?v=3.10.4">
+<link rel="stylesheet" href="./src/style.css?v=3.10.5">
 </head>
 <body>
 <div class="app" id="app">
@@ -23,7 +23,7 @@
   </nav>
   <div class="nav-caption">Sistem</div>
   <nav aria-label="Bulut ayarları"><button class="nav-item" data-view="settings"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M4 4l2 2m12 12 2 2M2 12h3m14 0h3"/></svg>Hesap ve bağlantı</button></nav>
-  <div class="sidebar-bottom"><div id="storageMessage"><span class="status-dot"></span>Bulut bağlantısı bekleniyor</div><div>GitHub Pages · Firebase · Drive</div><div>v3.10.4 · Mevzuatlar koda gömülmez</div></div>
+  <div class="sidebar-bottom"><div id="storageMessage"><span class="status-dot"></span>Bulut bağlantısı bekleniyor</div><div>GitHub Pages · Firebase · Drive</div><div>v3.10.5 · Mevzuatlar koda gömülmez</div></div>
 </aside>
 <div class="main"><header class="topbar"><div style="display:flex;align-items:center;gap:12px;min-width:0"><button class="btn icon-only mobile-toggle" id="menuButton" aria-label="Menüyü aç"><svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><div class="crumbs" id="breadcrumbs">Mevzuat / <b>Mevzuat kütüphanesi</b></div></div><div class="top-right"><span id="cloudAccount" class="cloud-account" title="Google hesabı">Oturum açılmadı</span><button class="btn subtle cloud-action" id="driveButton" data-action="drive" hidden>Drive bağla</button><button class="btn subtle cloud-action" id="logoutButton" data-action="signout" hidden>Çıkış</button><button class="btn subtle cloud-action" id="authButton" data-action="signin">Google ile giriş</button><label class="top-search"><svg class="icon sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="topQuery" placeholder="Mevzuatlarda ara ↵" aria-label="Tüm mevzuatta hızlı ara"></label><button class="btn primary" data-action="upload"><svg class="icon" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5"/><path d="M4 16v4h16v-4"/></svg>Mevzuat yükle</button></div></header><main class="screen" id="screen" aria-label="Mevzuat içeriği"></main></div>
 </div>
@@ -33,7 +33,7 @@
 <div class="toast-area" id="toasts" role="status" aria-live="polite"></div>
 <div id="bootDiagnostics" hidden role="alert" aria-live="assertive" style="position:fixed;right:14px;bottom:14px;z-index:3000;width:min(500px,calc(100vw - 28px));background:#fff8ed;color:#6d330d;border:1px solid #eab98c;border-radius:12px;padding:14px 16px;box-shadow:0 14px 45px #071c3130;font:14px/1.5 system-ui,sans-serif;white-space:pre-line"></div>
 <script>
-/* v3.10.4: surface load failures even when the main JS has not started. */
+/* v3.10.5: surface load failures even when the main JS has not started. */
 (function(){
   const messages=[];
   const paint=()=>{
@@ -50,7 +50,7 @@
   window.addEventListener('DOMContentLoaded',paint,{once:true});
   setTimeout(()=>{
     if(!window.ERULES_APP_EVENTS_READY)window.erulesBootReport('Uygulama başlatılamadı. src/app.js ve diğer JavaScript modüllerini kontrol edin.');
-    else if(window.ERULES_APP_BUILD!=='3.10.4')window.erulesBootReport('Dosya sürümleri uyuşmuyor: index.html v3.10.4, src/app.js '+(window.ERULES_APP_BUILD||'eski sürüm')+'. GitHub dosyalarını eşitleyin.');
+    else if(window.ERULES_APP_BUILD!=='3.10.5')window.erulesBootReport('Dosya sürümleri uyuşmuyor: index.html v3.10.5, src/app.js '+(window.ERULES_APP_BUILD||'eski sürüm')+'. GitHub dosyalarını eşitleyin.');
   },3500);
 })();
 </script>
@@ -65,16 +65,32 @@ window.EASA_CONFIG_READY = new Promise(resolve => {
   document.head.appendChild(element);
 });
 </script>
-<script src="./src/parser.js?v=3.10.4"></script>
-<script src="./src/clauses.js?v=3.10.4"></script>
-<script src="./src/tr-parser.js?v=3.10.4"></script>
-<script src="./src/tr-document-import.js?v=3.10.4"></script>
-<script src="./src/cloud.js?v=3.10.4"></script>
-<script src="./src/vendor/jszip.min.js?v=3.10.4"></script>
-<script src="./src/publications.js?v=3.10.4"></script>
-<script src="./src/publisher-ui.js?v=3.10.4"></script>
-<script src="./src/mappings-ui.js?v=3.10.4"></script>
-<script src="./src/tr-import-ui.js?v=3.10.4"></script>
-<script src="./src/app.js?v=3.10.4"></script>
+<script src="./src/parser.js?v=3.10.5"></script>
+<script src="./src/clauses.js?v=3.10.5"></script>
+<script>
+/* Avoid silently interpreting Turkish a) / 1) clauses with an old EASA-only reader. */
+(function(){
+  try {
+    const test = [
+      {t:'(1) Deneme fıkrası',level:0},
+      {t:'a) Deneme bendi',level:1},
+      {t:'1) Deneme alt bendi',level:2}
+    ];
+    const found = window.EasaClauses?.outline?.(test)?.filter(n=>n.type==='clause')||[];
+    if(found.length!==3 || found[0].level!==0 || found[1].level!==1 || found[2].level!==2 || found[2].anchor!=='1/a/1'){
+      window.erulesBootReport?.('src/clauses.js ESKİ veya eksik: Türkçe bent (a) / alt bent (1) okunamıyor. v3.10.5 paketindeki src/clauses.js dosyasını GitHub deposuna yükleyin.');
+    }
+  } catch(err) {window.erulesBootReport?.('src/clauses.js doğrulama hatası: '+(err?.message||err));}
+})();
+</script>
+<script src="./src/tr-parser.js?v=3.10.5"></script>
+<script src="./src/tr-document-import.js?v=3.10.5"></script>
+<script src="./src/cloud.js?v=3.10.5"></script>
+<script src="./src/vendor/jszip.min.js?v=3.10.5"></script>
+<script src="./src/publications.js?v=3.10.5"></script>
+<script src="./src/publisher-ui.js?v=3.10.5"></script>
+<script src="./src/mappings-ui.js?v=3.10.5"></script>
+<script src="./src/tr-import-ui.js?v=3.10.5"></script>
+<script src="./src/app.js?v=3.10.5"></script>
 </body>
 </html>

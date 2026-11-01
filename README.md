@@ -1,31 +1,54 @@
-# Havacilik Mevzuati Hub v3.10.4 - MADDE 4 bent/alt bent notlari
+# Havacılık Mevzuatı Hub v3.10.5 — Bent / Alt bent Notları Düzeltmesi
 
-## Ne duzeltildi?
+## Tespit edilen kesin hata
 
-v3.10.3, Google Drive'da daha once saklanmis SHY-OLAY'in islenmis verisinde bentler eksikse yeniden indeksleme islemini bazen gereksiz sayabiliyordu. Yeni surum, secilen maddenin **gercek kaynak XML kaydini** indirerek islenmis kayitla karsilastirir. Hicbir PDF/XML dosyasi veya not yalnizca denetim yapildigi icin degistirilmez.
+Kullanıcının `Mevzuat_Hiyerarsi_Tani.json` raporu, SHY-OLAY MADDE 4 için **36 kayıtlı metin bloğu** ve yalnızca **2 fıkra / 0 bent / 0 alt bent** gösteriyor. İndirilen `TR_Mevzuat_Yeniden_Ayrismis_Taslak.xml` ise ilgili maddede **2 fıkra + 30 bent + 3 alt bent** içeriyor.
 
-MADDE 4 icin onaylanmis ornek kaynakta su seviyeler goruluyor: 2 fikra, 30 bent, 3 alt bent (toplam 35 not hedefi).
+Hatanın esas kaynağı: GitHub'da muhtemelen v3.9 öncesinden kalan `src/clauses.js` dosyası. v3.4–v3.8 motoru yalnızca `(1)` / `(a)` biçimindeki parantezli numaraları tanır. Türk mevzuatının `a)`, `ç)`, `aa)` ve `1)` biçimlerini tanımaz. Bu yüzden işlenmiş veri ve arşiv XML'i, ikisi de tam olsa bile, aynı eski okuyucu tarafından **2 / 0 / 0** sayılıyor ve önceki onarım gerekli değilmiş gibi sonuçlanıyor.
 
-## GitHub'a guncelleme
+Aynı kullanıcı XML'iyle gerçek tarayıcı testi:
 
-1. `index.html`, `src/app.js`, `src/cloud.js`, `src/style.css` dosyalarini GitHub deposunda **ayni dosya yolu** ile degistirin. Diger dosyalari silmeyin.
-2. `config.js`, Firestore kurallari, Drive dosyalari, notlar ve yuklu SHY-OLAY XML/PDF degistirilmez.
-3. Sayfayi onbelleksiz yenileyin. Sol altta `v3.10.4` yazisini kontrol edin.
-4. SHY-OLAY -> **MADDE 4** ekranina gidin. `Not hedefleri` sayacini inceleyin.
-5. **Kaynak XML ile kontrol et** dugmesine basin.
-6. Sistem yalnizca **maddenin tam metni ve basligi ayniysa**, mevcut notlar yeni yapida gorunuyorsa ve kaynaktan daha fazla bent/alt bent bulunuyorsa `Onayla: bu maddenin bentlerini bulutta duzelt` dugmesini gosterir. Bu dugmeyle onay verin.
-7. Sonrasinda `2 fikra - 30 bent - 3 alt bent` ve her birinin yaninda `Not ekle` dugmesi beklenir. `MADDE 4 > (1) > s) > 2)` uzerinde deneyin.
+| Motor | Metin bloğu | Fıkra | Bent | Alt bent |
+|---|---:|---:|---:|---:|
+| Eski v3.8 `clauses.js` | 36 | 2 | 0 | 0 |
+| Düzeltilmiş `clauses.js` | 36 | 2 | 30 | 3 |
 
-## Uyari durumlari
+Bu nedenle eski SHY-OLAY sürümünün Drive'dan silinmesi, yeni XML yüklenmesi veya bir veri onarımı çalıştırılması **gerekmiyor**.
 
-- Orijinal XML'de de bentler yoksa otomatik onarim yapilmaz. Daha once yuklenen PDF/Word arşivlenmisse **Orijinal Word/PDF'yi de kontrol et** dugmesiyle ikinci bir okuma yapilabilir.
-- Orijinal veya yeniden olusturulan metin ile buluttaki metin farkliysa uygulama **veri degisikligini engeller**. `Tani raporunu indir` secenegini kullanarak kişisel kimlik bilgisi icermeyen hiyerarsi tanisini alabilirsiniz. `Kontrol amacli XML indir` da vardir; elle dogrulamadan baska bir surumun uzerine yazmayin.
-- Eski subnot referanslari yeni yapida bulunamazsa otomatik onarim kapali kalir.
-- Yeni surum bir surumu guncellerken onceki **islenmis veri kopyasini** Google Drive'da muhafaza eder; bulut notlari ve orijinal belgeler etkilenmez.
+## GitHub'a kurulumu
 
-## Teknik QA
+v3.10.4'ten bu sürüme geçmek için yalnızca **üç** uygulama dosyasını, ZIP içindeki klasör yollarını koruyarak değiştirin:
 
-- `node --check` tum ana JavaScript dosyalarinda geciyor.
-- Chromium masaustu (1440) ve mobil (390): eski MADDE 4 `2 fikra/0 bent` modeline karsin dogrulanmis XML `2/30/3` modeli kontrollu onarildi, `1/s/2` note yazildi. Eski fıkra ve genel not kaybolmadi.
-- Metin uyusmazligi senaryosunda guvenli onarim dugmesi gosterilmiyor ve buluta yazma yapilmiyor.
-- Canli Firebase/Drive hesabi uzerinde test yapilmadi; en son onay kullanicida kalir.
+1. `index.html`
+2. `src/app.js`
+3. `src/clauses.js` (**asıl sorunlu dosya**)
+
+`src/clauses.js` dosyasını repo köküne değil `src/` klasörüne yükleyin. GitHub arayüzünden `src/clauses.js` dosyasını açıp içeriğini güncelleyebilir veya ZIP'den aynı yoluyla yükleyebilirsiniz. Her üç değişikliği commit edin; GitHub Pages dağıtımının tamamlandığını doğrulayın.
+
+Tarayıcıda önbelleksiz yenileme için **Ctrl + Shift + R** kullanın. Ekranın sol altındaki sürüm **v3.10.5** olmalı. Yeniden yüklenen `index.html` her JavaScript dosyasını `?v=3.10.5` ile çağırarak eski önbellek kopyalarını atlar.
+
+**Kesinlikle değiştirmeyin:** `config.js`, Firebase ayarları ve kuralları, Google Drive'daki orijinal Word/PDF/XML dosyaları, işlemden geçmiş mevzuat verisi veya mevcut Firestore notları. Hiçbir mevzuat dosyasını yeniden yüklemeyin ya da silmeyin.
+
+## Kullanıcı testi
+
+1. Mevcut SHY-OLAY'ı açın.
+2. **MADDE 4 — Tanımlar ve kısaltmalar** maddesine gidin.
+3. `Not hedefleri` satırında **2 fıkra · 30 bent · 3 alt bent** görmelisiniz.
+4. `s)` bendini, `2)` alt bendini açın. Her birinin yanında bağımsız `Not ekle` düğmesi olmalıdır.
+5. `MADDE 4 → (1) → s) → 2)` için yeni bir not kaydedin ve diğer eski notların korunduğunu kontrol edin.
+
+**Kaynak XML ile kontrol et**, **XML hiyerarşisini güncelle**, **Buluttan yenile**, XML/PDF'yi yeniden yükle veya sürümü sil gibi işlemler gerekli değildir.
+
+## Yeni sürümde ilave güvenlik
+
+- Sayfa açılırken motorun `a)` ve `1)` Türkçe numaralarını ayrıştırabilmesi küçük bir testle kontrol edilir.
+- `clauses.js` eskiyse sayfanın sağ altındaki teşhis bölümünde bunun adı açıkça gösterilir; ana menüler kilitlenmez.
+- `Mevzuat_Hiyerarsi_Tani.json` dosyasına artık motor sürümü ve `bent` / `altBent` destek bayrakları eklenir.
+- EASA maddelerinde kullanılan eski `(a)` biçimi ve mevcut not referansları korunur.
+
+## Yerel test özeti
+
+- Kullanıcının gönderdiği gerçek SHY-OLAY XML'i üzerinde aynı 36 bloktan **2 / 30 / 3** hiyerarşisi oluşturuldu.
+- Chromium masaüstü (1440 piksel) ve mobil (390 piksel): 35 bağımsız not düğmesi doğrulandı; alt bent `1/s/2` notu başarıyla kaydedildi. Önceki genel not ve `1` fıkra notu korundu.
+- Eski v3.8 `clauses.js` bilinçli olarak kullanıldığında doğru dosya uyarısı verildi; ana gezinme çalıştı.
+- Gerçek Firebase hesabına erişim kullanılmadı; not kaydı testlerinde bulut servisi simüle edildi.
