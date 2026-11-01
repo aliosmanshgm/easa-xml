@@ -4,12 +4,12 @@
 */
 (function (root) {
   'use strict';
-  const numbered = /^\s*\(\s*([a-zA-Z]{1,5}|\d{1,4})\s*\)[ \t\u00a0]*/;
+  const numbered = /^\s*(?:\(\s*([a-zA-Zçğıöşü]{1,5}|\d{1,4})\s*\)|([a-zA-Zçğıöşü]{1,3}|\d{1,4})\))[ \t\u00a0]*/i;
   const romans = /^(?:i|ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|xiii|xiv|xv|xvi|xvii|xviii|xix|xx)$/;
   function marker(text) {
     const m = numbered.exec(String(text || ''));
     if (!m) return null;
-    return {code:m[1].toLowerCase(), label:'('+m[1]+')', body:String(text).slice(m[0].length).trim()};
+    const token=m[1]||m[2];return {code:token.toLowerCase(), label:m[1]?'('+token+')':token+')', body:String(text).slice(m[0].length).trim()};
   }
   function group(code, primary, lastRoot) {
     if (/^\d+$/.test(code)) return 'number';
@@ -65,6 +65,6 @@
   }
   function noteText(v){return typeof v==='string'?v:(v&&typeof v.text==='string'?v.text:'');}
   function countNotes(annotation){return Object.values(annotation?.subnotes||{}).filter(v=>noteText(v).trim()).length;}
-  root.EasaClauses={outline,marker,fingerprint,noteText,countNotes};
+  root.EasaClauses={outline,marker,fingerprint,noteText,countNotes,version:'3.10.5'};
   if (typeof module!=='undefined' && module.exports) module.exports=root.EasaClauses;
 })(typeof globalThis!=='undefined'?globalThis:this);
