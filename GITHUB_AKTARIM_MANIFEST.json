@@ -1,112 +1,152 @@
 {
-  "project": "Havacılık Mevzuatı Hub",
-  "version": "3.11.1",
-  "containsUserData": false,
-  "preserve": [
-    "config.js",
-    "Firebase ayarları ve kayıtları",
-    "Google Drive orijinal mevzuat dosyaları"
-  ],
-  "files": {
-    ".nojekyll": {
-      "size": 0,
+  "application": "Havacilik Mevzuati Hub",
+  "version": "3.11.2",
+  "package": "complete GitHub Pages deployment, no config.js or user documents",
+  "files": [
+    {
+      "path": ".nojekyll",
+      "bytes": 0,
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
-    "KURULUM_KONTROL_LISTESI.md": {
-      "size": 2089,
-      "sha256": "af897144324781bfac9b2893ff38ba9bf7c85f4755a887c157185456edccfff3"
+    {
+      "path": "KURULUM_KONTROL_LISTESI.md",
+      "bytes": 2950,
+      "sha256": "e5972175d37328bc4539039cee1910e7d6eaabb55eb2d48513a30bf09fe374cc"
     },
-    "README.md": {
-      "size": 10079,
-      "sha256": "27cfd12d3d61a60e3a180489940b8e995a186b4070b954bada66e10695e503fa"
+    {
+      "path": "README.md",
+      "bytes": 12450,
+      "sha256": "456291df84bb6525e1f5c39ed97d68a25fbdc9342bbcceaab26e576374c2c041"
     },
-    "TR_Mevzuat_Semasi_v1_1.xsd": {
-      "size": 3897,
+    {
+      "path": "TR_Mevzuat_Semasi_v1_1.xsd",
+      "bytes": 3897,
       "sha256": "47fe7b1055074f9c044fd34c7b05c69deb3155283c16ab0f9ab9f7731384e30d"
     },
-    "TR_Mevzuat_Semasi_v2_0.xsd": {
-      "size": 16929,
+    {
+      "path": "TR_Mevzuat_Semasi_v2_0.xsd",
+      "bytes": 16929,
       "sha256": "19dada7beda35c79dde70bc507abc02c3b597242d5e82a0cea64d60da6ffc63f"
     },
-    "TR_Mevzuat_Semasi_v2_0_YeniKayit.xsd": {
-      "size": 16944,
+    {
+      "path": "TR_Mevzuat_Semasi_v2_0_YeniKayit.xsd",
+      "bytes": 16944,
       "sha256": "0318315e79fed116bf59fc4163bd9f22ab2a3c6f3b0aaaa314e1fd88269b56bb"
     },
-    "index.html": {
-      "size": 8365,
-      "sha256": "ab05258d4250918a1a214f880c6acb7d492dd0af9c015bfd413c17f6754935de"
+    {
+      "path": "YURURLUK_GECIS_TAKIBI_KULLANIM.md",
+      "bytes": 5375,
+      "sha256": "8de84d3032b85a95d192f8c476a265bfedd148579cd1d4343682dfe7eb858016"
     },
-    "src/app.js": {
-      "size": 123769,
-      "sha256": "a92e1617a35380b12440df5847ac31dc1b1a4ca988a9597d4decc2142a28eac7"
+    {
+      "path": "index.html",
+      "bytes": 8698,
+      "sha256": "cb1c30981ff100a652df5e7a4877e750cf1ebf1ead4c1b81011de39791134c00"
     },
-    "src/clauses.js": {
-      "size": 3756,
+    {
+      "path": "src/app.js",
+      "bytes": 126534,
+      "sha256": "7a566b213abd2bc71caad055504e745e94e12319305dc859dde994a441a11601"
+    },
+    {
+      "path": "src/clauses.js",
+      "bytes": 3756,
       "sha256": "ba66a2f600b08f5ac43aa0c7aebff1ca4c1647069ae5075d630c6afb6fabddf7"
     },
-    "src/cloud.js": {
-      "size": 30651,
-      "sha256": "9adb70c786d98eec5e66fa29e3187d431cc8f864651f2c6e089059d58b767fc1"
+    {
+      "path": "src/cloud.js",
+      "bytes": 33674,
+      "sha256": "a3c350feb70113d27bfe173bba9930a2544e009a3f9959882b48d98206f59d8c"
     },
-    "src/mappings-ui.js": {
-      "size": 13594,
+    {
+      "path": "src/mappings-ui.js",
+      "bytes": 13594,
       "sha256": "6a7b460a94f1fb72684ca2c515080861fe4fc0a458d9c23112d923465a61f744"
     },
-    "src/parser.js": {
-      "size": 7280,
+    {
+      "path": "src/parser.js",
+      "bytes": 7280,
       "sha256": "39ad4a9906a351541a551b6628e09d56ec4df6409161fb70547b96e76444fec1"
     },
-    "src/parser.worker.js": {
-      "size": 497,
+    {
+      "path": "src/parser.worker.js",
+      "bytes": 497,
       "sha256": "86077b24ed200d06319bebcb4f2bbe8be892c32e15529790e81eba89a76d8f68"
     },
-    "src/publications.js": {
-      "size": 32480,
+    {
+      "path": "src/publications.js",
+      "bytes": 32480,
       "sha256": "2faaecd5054b42d1bdb7c4e4f0c5709c5aea3946553dad844d1d45c72874da3a"
     },
-    "src/publisher-ui.js": {
-      "size": 39945,
+    {
+      "path": "src/publisher-ui.js",
+      "bytes": 39945,
       "sha256": "38cf298e634d47a9f3f35a15a35df3164bdfa506e58a3f513cad895afb24598d"
     },
-    "src/style.css": {
-      "size": 53364,
-      "sha256": "5b6b3b0465b248f8547d987ec388368c4775fa295818e9ae2066cde0233a65aa"
+    {
+      "path": "src/style.css",
+      "bytes": 59277,
+      "sha256": "b73afdebbea7c6bdf63d742f114a8f7fffdbc2602b41041689516c12adf02cd4"
     },
-    "src/tr-dates.js": {
-      "size": 4973,
+    {
+      "path": "src/temporal-ui.js",
+      "bytes": 24792,
+      "sha256": "736fb9e6e8a83ba9ad52e3814e5ad44f0e11671bca2f98d09388ce883283bc7c"
+    },
+    {
+      "path": "src/temporal.js",
+      "bytes": 11574,
+      "sha256": "e54010469ef0d0642d6408847c19c7a05a6138aec6524fb4f4369840359e3f06"
+    },
+    {
+      "path": "src/tr-dates.js",
+      "bytes": 4973,
       "sha256": "f3439a33b3facca7dd470bc128d71054d7588326342abfb36bd26830f8eac3ef"
     },
-    "src/tr-document-import.js": {
-      "size": 26555,
+    {
+      "path": "src/tr-document-import.js",
+      "bytes": 26555,
       "sha256": "500cce5428964f5b0b70c2375b5c01a1396934f3561d4d520be8a08fcfa4a130"
     },
-    "src/tr-import-ui.js": {
-      "size": 17492,
+    {
+      "path": "src/tr-import-ui.js",
+      "bytes": 17492,
       "sha256": "bb243aace8bad85c99bf18ea6c7e8ec683d354069b1c53b61aaabeafd6649086"
     },
-    "src/tr-parser.js": {
-      "size": 9786,
+    {
+      "path": "src/tr-parser.js",
+      "bytes": 9786,
       "sha256": "d8b7b5c0772acbbcc80180f3c68906f637caf62bd44af08b2863fd28b409b852"
     },
-    "src/tr-schema.js": {
-      "size": 12850,
+    {
+      "path": "src/tr-schema.js",
+      "bytes": 12850,
       "sha256": "c801960ffdefb0a94879a2888f2fa5a634ded74da50a1a977f0e025d3f2a2a08"
     },
-    "src/vendor/JSZip-LICENSE.md": {
-      "size": 33753,
+    {
+      "path": "src/vendor/JSZip-LICENSE.md",
+      "bytes": 33753,
       "sha256": "566c953c6090b1218ca6217dd7359d45dde46581968586dc607d59a78af6a9c4"
     },
-    "src/vendor/jszip.min.js": {
-      "size": 97630,
+    {
+      "path": "src/vendor/jszip.min.js",
+      "bytes": 97630,
       "sha256": "acc7e41455a80765b5fd9c7ee1b8078a6d160bbbca455aeae854de65c947d59e"
     },
-    "tools/site_kontrol.py": {
-      "size": 1195,
-      "sha256": "b54fbc01a7124e9de9f03d5c178f1614ae7f46d507bac89e3db8d7882b5d7037"
+    {
+      "path": "tools/site_kontrol.py",
+      "bytes": 1236,
+      "sha256": "c02ff353acb8d5430ddc17d787c5d62e25412c4ebf0a5721971283d66e8c3c02"
     },
-    "tools/tr_mevzuat_dogrula.py": {
-      "size": 15321,
+    {
+      "path": "tools/temporal_smoke_test.js",
+      "bytes": 2068,
+      "sha256": "aca40c6ac525a2c292c235fb154f819b700d7fcd6b03eeed1eec7577dd51bda7"
+    },
+    {
+      "path": "tools/tr_mevzuat_dogrula.py",
+      "bytes": 15321,
       "sha256": "d364375948d76986e962f5849da5aa36c0d8c80773f5b052ba988cf3a7e872e4"
     }
-  }
+  ]
 }

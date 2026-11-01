@@ -1,8 +1,20 @@
-# Havacılık Mevzuatı Hub v3.11.1
+# Havacılık Mevzuatı Hub v3.11.2
 
 **GitHub Pages + Firebase Auth/Firestore + Google Drive; EASA ve Türkiye mevzuatları için tek kullanıcı kütüphanesi.**
 
 Bu sürüm, 23/2/2022 tarihli ve 5210 sayılı Cumhurbaşkanı Kararı ile kabul edilen, 24/2/2022 tarihli ve 31760 sayılı Resmî Gazete'de yayımlanan **Mevzuat Hazırlama Usul ve Esasları Hakkında Yönetmelik** metni esas alınarak oluşturulan Türkiye Mevzuatı XML Standardı v2.0'ı uygulamaya entegre eder.
+
+## v3.11.2 – AB/TR için hüküm bazlı yürürlük ve geçiş takibi
+
+**Yeni sol menü:** **Yürürlük ve Geçiş Takibi**. Genel yürürlük, uygulanmaya başlama, kademeli yürürlük, geçiş/uyum süresi, yürürlükten kaldırılma, askıya alma ve geçerlilik sonu için farklı **mevzuat + sürüm + madde/bent** kimliklerine bağlı çoklu kayıt tutulur. Kayıtlar Firestore'daki kullanıcıya özel **`temporalEvents`** koleksiyonundadır; kaynak XML/Word/PDF ile kişisel notlar değiştirilmez. Aday tarihleri ve güncel hukukî statüleri otomatik kesinleştirme yapılmaz.
+
+- **SHY-OLAY:** MADDE 28 uyarınca genel yürürlük adayı **18.03.2027**; GEÇİCİ MADDE 1'deki 18 aylık sürenin hesaplanan son günü adayı **18.09.2028** olarak ayrı gösterilir. Kullanıcıdan kontrol ve onay istenir. İkinci tarih genel uygulanabilirlik tarihi değildir.
+- **EASA / AB:** mevcut EASA XML'indeki hüküm bazlı tarih üst verileri ve İngilizce metinlerdeki sınırlı açık tarih ifadeleri öneri olarak sunulabilir. Belirli mevzuat hükümlerinin mülga olup olmadığı **değişiklik ve konsolidasyon kaynakları** üzerinden ayrıca doğrulanmalıdır.
+- **Kapsam:** tüm mevzuat, belirli madde/alt bent, kademeli olarak seçilen hüküm grupları. Kaynak, göreli tarih hesabı, tarih koşulu, kaldıran düzenleme ve değerlendirme notu alanları bulunur.
+- **İş akışı:** taslak → kaynak kontrolü → kullanıcı tarafından onaylanan kayıt. Günlük durum rozetleri sadece **kayıt tarihine yaklaşma/geçme** anlamına gelir, hukukî yürürlük kararı değildir. Veri CSV olarak dışa aktarılabilir.
+- **Yedek:** JSON katalog yedeğine yeni kayıtlar eklendi. Geri yükleme mevcut ID'li kayıtların üzerine yazmaz. Farklı cihaz değişiklikleri revizyon kontrolüyle korunur.
+
+**Kurulum:** Önceki sürümlerde eksik dosyalar görüldüğünden **tam GitHub paketini** kullanın. `config.js` kesinlikle korunur; mevcut mevzuat yeniden yüklenmez. Ayrıntılı kullanım: `YURURLUK_GECIS_TAKIBI_KULLANIM.md`. Bu sürümün yeni `temporalEvents` koleksiyonuna kullanıcı-sahiplik esaslı Firestore kuralının erişim tanıdığını mevcut kurallarınızdan kontrol edin. **Canlı bulut test edilmedi.**
 
 ## GitHub'a yükleme (önerilen tek yöntem)
 
@@ -10,7 +22,7 @@ Bu sürüm, 23/2/2022 tarihli ve 5210 sayılı Cumhurbaşkanı Kararı ile kabul
 2. **`config.js` dosyasının kopyasını güvenli bir yerde tut.** Paket içinde `config.js` **bulunmaz**. Mevcut dosyanızı koruyun; aynı yapılandırmayı yeniden üretmeyin. Firebase/GDrive bağlantı ayarlarını değiştirme.
 3. ZIP'i aç, klasör yapısını bozmadan içindeki **`index.html`, `src` klasörünün tamamı, `.nojekyll`** ve XSD dosyalarını mevcut `easa-xml` deposuna yükle. `src` klasöründeki tüm JavaScript bileşenleri ile `src/vendor/` birlikte yüklenmeli; dosyalar yanlışlıkla `easa-xml/easa-xml/src` içine taşınmamalı.
 4. **Firebase güvenlik kurallarını yeniden yayımlama.** Dağıtım paketinde `firestore.rules` bulunmaz; mevcut güvenlik kurallarını değiştirme.
-5. GitHub Pages dağıtımını kontrol et; tarayıcıda **Ctrl + Shift + R** ile yeniden yükle. Sol menüde `v3.11.1` görülmeli.
+5. GitHub Pages dağıtımını kontrol et; tarayıcıda **Ctrl + Shift + R** ile yeniden yükle. Sol menüde `v3.11.2` görülmeli.
 6. **Mevzuat kütüphanesi, TR–EASA eşleştirmeleri, Yayın Oluşturucu ve Notlar** menülerini aç. Ardından **Mevzuat yükle → Word/PDF** işlemini test et.
 
 > Mevcut SHY-OLAY XML'ini yeniden yükleme veya silme. Firestore notları ve Google Drive arşivindeki mevcut dosyalar üzerinde otomatik toplu dönüşüm yapılmaz.
@@ -25,7 +37,7 @@ Bu sürüm, 23/2/2022 tarihli ve 5210 sayılı Cumhurbaşkanı Kararı ile kabul
 
 **Yedekleme:** Mevcut JSON katalog yedeği onaylanan tarih üst verisini içerir. Yedekten geri yüklemede yalnızca buluttaki sürümde henüz bulunmayan tarih kaydı yeniden eklenir; hâlihazırdaki tarih kaydı otomatik değiştirilmez. Tarih yedeği, kaynak mevzuatın arşiv kopyası değildir.
 
-**Teknik:** Yeni `src/tr-dates.js` modülü otomatik önerileri hesaplar. `src/cloud.js` üzerindeki `saveReleaseDates()` Firestore işlemi, yalnızca `legalDates` alanını revizyon kontrolüyle günceller. TR XML v2.0 şemalarında `applicabilityDate` isteğe bağlıdır. v1.0 kaynak XML'ler ve mevcut SHY-OLAY not kimlikleri korunur. **Yeni Firebase koleksiyonu, Drive yetkisi veya güvenlik kuralı gerekmiyor.**
+**Teknik:** Yeni `src/tr-dates.js` modülü otomatik önerileri hesaplar. `src/cloud.js` üzerindeki `saveReleaseDates()` Firestore işlemi, yalnızca `legalDates` alanını revizyon kontrolüyle günceller. TR XML v2.0 şemalarında `applicabilityDate` isteğe bağlıdır. v1.0 kaynak XML'ler ve mevcut SHY-OLAY not kimlikleri korunur. **Bu ifade yalnızca v3.11.1 tarih üst verisi için geçerlidir. v3.11.2, yeni kullanıcıya özel `temporalEvents` koleksiyonunu kullanır; mevcut sahiplik kuralı bunun erişimini kapsamalıdır.**
 
 ## v3.11'de neler değişti?
 
