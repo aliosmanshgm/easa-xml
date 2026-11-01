@@ -1,54 +1,70 @@
-# Havacılık Mevzuatı Hub v3.10.5 — Bent / Alt bent Notları Düzeltmesi
+# Havacılık Mevzuatı Hub v3.11.0
 
-## Tespit edilen kesin hata
+**GitHub Pages + Firebase Auth/Firestore + Google Drive; EASA ve Türkiye mevzuatları için tek kullanıcı kütüphanesi.**
 
-Kullanıcının `Mevzuat_Hiyerarsi_Tani.json` raporu, SHY-OLAY MADDE 4 için **36 kayıtlı metin bloğu** ve yalnızca **2 fıkra / 0 bent / 0 alt bent** gösteriyor. İndirilen `TR_Mevzuat_Yeniden_Ayrismis_Taslak.xml` ise ilgili maddede **2 fıkra + 30 bent + 3 alt bent** içeriyor.
+Bu sürüm, 23/2/2022 tarihli ve 5210 sayılı Cumhurbaşkanı Kararı ile kabul edilen, 24/2/2022 tarihli ve 31760 sayılı Resmî Gazete'de yayımlanan **Mevzuat Hazırlama Usul ve Esasları Hakkında Yönetmelik** metni esas alınarak oluşturulan Türkiye Mevzuatı XML Standardı v2.0'ı uygulamaya entegre eder.
 
-Hatanın esas kaynağı: GitHub'da muhtemelen v3.9 öncesinden kalan `src/clauses.js` dosyası. v3.4–v3.8 motoru yalnızca `(1)` / `(a)` biçimindeki parantezli numaraları tanır. Türk mevzuatının `a)`, `ç)`, `aa)` ve `1)` biçimlerini tanımaz. Bu yüzden işlenmiş veri ve arşiv XML'i, ikisi de tam olsa bile, aynı eski okuyucu tarafından **2 / 0 / 0** sayılıyor ve önceki onarım gerekli değilmiş gibi sonuçlanıyor.
+## GitHub'a yükleme (önerilen tek yöntem)
 
-Aynı kullanıcı XML'iyle gerçek tarayıcı testi:
+1. Mevcut uygulamanın **Hesap ve bağlantı > Katalog yedeğini indir** işlemiyle notların, yer imlerinin, şablonların ve eşleştirmelerin yedeğini al.
+2. **`config.js` dosyasının kopyasını güvenli bir yerde tut.** Paket içinde `config.js` **bulunmaz**; yalnızca `config.example.js` vardır. Firebase/GDrive bağlantı ayarlarını değiştirme.
+3. ZIP'i aç, klasör yapısını bozmadan içindeki **`index.html`, `src` klasörünün tamamı, `.nojekyll`** ve XSD dosyalarını mevcut `easa-xml` deposuna yükle. `src` klasöründeki tüm JavaScript bileşenleri ile `src/vendor/` birlikte yüklenmeli; dosyalar yanlışlıkla `easa-xml/easa-xml/src` içine taşınmamalı.
+4. **Firebase güvenlik kurallarını yeniden yayımlama.** Dağıtım paketinde `firestore.rules` bulunmaz; mevcut güvenlik kurallarını değiştirme.
+5. GitHub Pages dağıtımını kontrol et; tarayıcıda **Ctrl + Shift + R** ile yeniden yükle. Sol menüde `v3.11.0` görülmeli.
+6. **Mevzuat kütüphanesi, TR–EASA eşleştirmeleri, Yayın Oluşturucu ve Notlar** menülerini aç. Ardından **Mevzuat yükle → Word/PDF** işlemini test et.
 
-| Motor | Metin bloğu | Fıkra | Bent | Alt bent |
-|---|---:|---:|---:|---:|
-| Eski v3.8 `clauses.js` | 36 | 2 | 0 | 0 |
-| Düzeltilmiş `clauses.js` | 36 | 2 | 30 | 3 |
+> Mevcut SHY-OLAY XML'ini yeniden yükleme veya silme. Firestore notları ve Google Drive arşivindeki mevcut dosyalar üzerinde otomatik toplu dönüşüm yapılmaz.
 
-Bu nedenle eski SHY-OLAY sürümünün Drive'dan silinmesi, yeni XML yüklenmesi veya bir veri onarımı çalıştırılması **gerekmiyor**.
+## v3.11'de neler değişti?
 
-## GitHub'a kurulumu
+- `src/tr-schema.js` **yeni**: v1.0/v2.0 TR XML doğrulama ve seçilmiş mevzuat biçim kuralları. Tarayıcıda yapısal ve iş kuralı denetimi yapılır; bu tam bir XSD işlemcisi değildir.
+- `src/tr-parser.js` **güncellendi**: iki XML sürümünü ve kitap/kısım/bölüm, ek ve geçici maddeleri, çerçeve değişiklik metinlerini, maddesiz genelge/tebliği ve ekleri okuyabilir.
+- `src/tr-document-import.js` **güncellendi**: Word/PDF metin katmanlarından v2.0 XML üretir. Farklı mevzuat sınıfları ve numaralandırma düzeni için genişletildi.
+- `src/tr-import-ui.js` **güncellendi**: mevzuat türü, müstakil/çerçeve, taslak/yayımlanmış/konsolide, yayım kanalı seçimleri; önizleme ve doğrulama. Kanun/CBK taslaklarında madde gerekçesi ve etki analizi referansı alanları eklendi.
+- `src/app.js`, `src/clauses.js`, `src/style.css`, `index.html` güncellendi. Tüm diğer modüller v3.10.5'ten korunarak birlikte paketlendi.
+- `TR_Mevzuat_Semasi_v2_0_YeniKayit.xsd`: yeni kayıtlar için **sıkı XSD**, `TR_Mevzuat_Semasi_v2_0.xsd`: v1.0 arşiv uyumlu XSD. Önceki `TR_Mevzuat_Semasi_v1_1.xsd` referans amaçlı tutuldu.
+- `tools/site_kontrol.py`: GitHub’a yüklenmesi gereken bütün yerel modüllerin varlığını kontrol eder.
+- `tools/tr_mevzuat_dogrula.py`: çevrimdışı **gerçek XSD + ek iş kuralı** doğrulaması. Python 3 ve `lxml` gerektirir.
 
-v3.10.4'ten bu sürüme geçmek için yalnızca **üç** uygulama dosyasını, ZIP içindeki klasör yollarını koruyarak değiştirin:
+## Mevzuat yapısı
 
-1. `index.html`
-2. `src/app.js`
-3. `src/clauses.js` (**asıl sorunlu dosya**)
+Yeni standart; kanun, Cumhurbaşkanlığı kararnamesi, karar, yönetmelik, talimat, yönerge, tebliğ ve genelge türlerini veri olarak sınıflandırır. Müstakil düzenlemede **Kitap → Kısım → Bölüm → Madde → Fıkra → Bent → Alt bent**, çerçeve değişiklik mevzuatında **numarasız fıkralı çerçeve madde**, tebliğ/genelge istisnasında **maddesiz metin bölümleri** ve ekler desteklenir.
 
-`src/clauses.js` dosyasını repo köküne değil `src/` klasörüne yükleyin. GitHub arayüzünden `src/clauses.js` dosyasını açıp içeriğini güncelleyebilir veya ZIP'den aynı yoluyla yükleyebilirsiniz. Her üç değişikliği commit edin; GitHub Pages dağıtımının tamamlandığını doğrulayın.
+Türk alfabesindeki bent etiketleri, `MADDE 9/A-`, `EK MADDE 2-`, `GEÇİCİ MADDE 1-`, ekler ve yürürlük tarihi modelde saklanabilir. **Tespit edilen yapı resmî metinle karşılaştırılmadan buluta yüklenmez.**
 
-Tarayıcıda önbelleksiz yenileme için **Ctrl + Shift + R** kullanın. Ekranın sol altındaki sürüm **v3.10.5** olmalı. Yeniden yüklenen `index.html` her JavaScript dosyasını `?v=3.10.5` ile çağırarak eski önbellek kopyalarını atlar.
+### Sınırlamalar ve dikkat edilmesi gerekenler
 
-**Kesinlikle değiştirmeyin:** `config.js`, Firebase ayarları ve kuralları, Google Drive'daki orijinal Word/PDF/XML dosyaları, işlemden geçmiş mevzuat verisi veya mevcut Firestore notları. Hiçbir mevzuat dosyasını yeniden yüklemeyin ya da silmeyin.
+- PDF metin katmanı gerektirir; görüntü/tarama PDF için **OCR yoktur**. PDF.js 3.11.174 bileşeni ilk kullanımda CDN'den yüklenir. `.doc` yerine `.docx` kullanılmalıdır.
+- Word otomatik numaralandırması ve karmaşık tablolar her dosyada güvenilir çıkarılamayabilir; uygulama uyarır. Ekler/metin korunur ama tablo hücrelerinin ve görsellerin birebir hukuki içerik olarak taşındığı garanti edilmez. **Çerçeve değişiklik metinlerinde içeride alıntılanan başka maddelerin sınırları uzman kontrolü gerektirir.**
+- Uygulama içindeki JS doğrulama XSD 1.0 motoru değildir; XSD şemaları ve Python denetleyici ile **çevrimdışı bağımsız doğrulama** mümkündür. Tipografi, usule uygun görüş alma, kanunî yetki, içerik/mevzuat uyumu ve tarihsel mevzuat değişiklikleri uzman incelemesinden geçmelidir.
+- Kanun/CBK taslağında genel/madde gerekçesi ve etki analizi referansı istenir. **Referans girmek ek belgeyi yüklemez**; gerçek belgeyi ayrıca kurumsal arşive koyman gerekir.
+- Eski yürürlükte/yayımlanmış düzenlemeler **kendiliğinden yeni biçime dönüştürülmez**, uygulama yalnızca yeni belgelerde bu yapıya göre XML üretir.
+- `talimat` ve `yonerge` türlerini dijital sınıf olarak desteklemek, bunların her durumda Resmî Gazete adı olarak kullanılabileceği anlamına gelmez. Yönetmelik m.11/4 ve ilgili özel düzenlemeler ayrıca gözetilmelidir.
 
-## Kullanıcı testi
+## Eski notların korunması
 
-1. Mevcut SHY-OLAY'ı açın.
-2. **MADDE 4 — Tanımlar ve kısaltmalar** maddesine gidin.
-3. `Not hedefleri` satırında **2 fıkra · 30 bent · 3 alt bent** görmelisiniz.
-4. `s)` bendini, `2)` alt bendini açın. Her birinin yanında bağımsız `Not ekle` düğmesi olmalıdır.
-5. `MADDE 4 → (1) → s) → 2)` için yeni bir not kaydedin ve diğer eski notların korunduğunu kontrol edin.
+`schemaVersion="1.0"` XML'leri yeni okuyucuda okunur ve eski `tr:TR.SHY-OLAY.M4` gibi **madde anahtarları aynen kalır**. SHY-OLAY'ın v1.0 XML'indeki işlenmiş 30 madde kaydının **sürüm kimliği ve tüm metin/alt bent blokları** eski okuyucuyla birebir karşılaştırıldı. Bu yazılım güncellemesinde hiçbir sürüm dosyası, not veya eşleştirme silinmez/yeniden yazılmaz. Yeni v2 XML'i kullanıcı ayrıca yüklerse farklı metin imlâları farklı bir içerik parmak izi yaratabilir; mevcut sürüme kendiliğinden yazılmaz.
 
-**Kaynak XML ile kontrol et**, **XML hiyerarşisini güncelle**, **Buluttan yenile**, XML/PDF'yi yeniden yükle veya sürümü sil gibi işlemler gerekli değildir.
+## Test özeti (yerel, canlı Google hesabı kullanmadan)
 
-## Yeni sürümde ilave güvenlik
+- SHY-OLAY Word ve PDF metni: **4 bölüm / 30 madde / 88 fıkra / 59 bent / 3 alt bent**.
+- Her iki belgeden üretilen v2.0 XML: **lxml gerçek XSD doğrulaması başarılı**.
+- v1.0 SHY-OLAY: tüm 30 kayıt ve sürüm parmak izi eski sürümle eşleşti.
+- v2.0 örnek çerçeve kanun, maddesiz genelge, kitap-kısım-bölüm talimat, ekler: JS ayrıştırma kontrolü başarılı.
+- Chrome masaüstü ve mobil: menülerin tıklanabilirliği, yeni yükleme önizlemesi ve yatay taşmama testi başarılı.
+- **Canlı Firebase/Drive yüklemesi ve gerçek GitHub Pages dağıtımı test edilmedi.**
 
-- Sayfa açılırken motorun `a)` ve `1)` Türkçe numaralarını ayrıştırabilmesi küçük bir testle kontrol edilir.
-- `clauses.js` eskiyse sayfanın sağ altındaki teşhis bölümünde bunun adı açıkça gösterilir; ana menüler kilitlenmez.
-- `Mevzuat_Hiyerarsi_Tani.json` dosyasına artık motor sürümü ve `bent` / `altBent` destek bayrakları eklenir.
-- EASA maddelerinde kullanılan eski `(a)` biçimi ve mevcut not referansları korunur.
+## Çevrimdışı XSD doğrulama
 
-## Yerel test özeti
+Gerekiyorsa ZIP içindeki proje kökünde:
 
-- Kullanıcının gönderdiği gerçek SHY-OLAY XML'i üzerinde aynı 36 bloktan **2 / 30 / 3** hiyerarşisi oluşturuldu.
-- Chromium masaüstü (1440 piksel) ve mobil (390 piksel): 35 bağımsız not düğmesi doğrulandı; alt bent `1/s/2` notu başarıyla kaydedildi. Önceki genel not ve `1` fıkra notu korundu.
-- Eski v3.8 `clauses.js` bilinçli olarak kullanıldığında doğru dosya uyarısı verildi; ana gezinme çalıştı.
-- Gerçek Firebase hesabına erişim kullanılmadı; not kaydı testlerinde bulut servisi simüle edildi.
+```bash
+python -m pip install lxml
+python tools/tr_mevzuat_dogrula.py OrnekMevzuat.xml --schema TR_Mevzuat_Semasi_v2_0_YeniKayit.xsd --json rapor.json
+```
+
+Kaynaklar **2022 tarihli gönderilen yönetmelik metni** ve bu metne göre hazırlanmış XSD v2.0 paketidir; daha sonraki resmî mevzuat değişiklikleri bu çalışma kapsamında doğrulanmamıştır.
+
+## Yükleme öncesi dosya bütünlüğü kontrolü
+
+ZIP açıldıktan sonra kök dizinde `python tools/site_kontrol.py` çalıştırılarak eksik statik modül kontrolü yapılabilir. Bu kontrol `config.js` dosyasını aramaz; mevcut GitHub ayar dosyan korunmalıdır.

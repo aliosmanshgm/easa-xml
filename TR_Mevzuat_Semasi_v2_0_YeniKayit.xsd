@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tr="urn:eyuik:legislation:tr:v1"
+           targetNamespace="urn:eyuik:legislation:tr:v1"
+           elementFormDefault="qualified" attributeFormDefault="unqualified"
+           version="2.0">
+  <xs:annotation><xs:documentation xml:lang="en">
+    Turkish legislation interchange schema v2.0 (XSD 1.0 compatible).
+    Legal basis: Regulation on Procedures and Principles of Legislative Drafting,
+    Presidential Decision 5210, Official Gazette 24 February 2022/31760,
+    especially articles 10-16, 19, 21, 23, 25 and Annex 4 examples.
+    The namespace and element names are deliberately preserved. This strict
+    edition requires schemaVersion=2.0, classification and article kinds.
+    Use the companion compatibility XSD for legacy v1.0 archives.
+    This schema validates document structure, NOT font weight, underlining,
+    draft consultation, legislative competence or the legality of provisions.
+    Existing application parser only supports schemaVersion=1.0; v2.0 XML
+    requires a parser update prior to upload into the live app.
+  </xs:documentation></xs:annotation>
+
+  <xs:simpleType name="SchemaVersionType"><xs:restriction base="xs:string">
+    <xs:enumeration value="2.0"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="NonBlankType"><xs:restriction base="xs:string">
+    <xs:minLength value="1"/><xs:pattern value=".*\S.*"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="ArticleNumberType"><xs:restriction base="xs:string">
+    <xs:pattern value="[1-9][0-9]*(/[A-Z&#x00C7;&#x011E;&#x0130;&#x00D6;&#x015E;&#x00DC;])?"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="BentLabelType"><xs:restriction base="xs:string">
+    <xs:pattern value="a+|b+|c+|&#x00E7;+|d+|e+|f+|g+|&#x011F;+|h+|&#x0131;+|i+|j+|k+|l+|m+|n+|o+|&#x00F6;+|p+|r+|s+|&#x015F;+|t+|u+|&#x00FC;+|v+|y+|z+"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="DocumentKindType"><xs:restriction base="xs:string">
+    <xs:enumeration value="kanun"/>
+    <xs:enumeration value="cumhurbaskanligi-kararnamesi"/>
+    <xs:enumeration value="cumhurbaskani-karari"/>
+    <xs:enumeration value="yonetmelik"/>
+    <xs:enumeration value="karar"/>
+    <xs:enumeration value="teblig"/>
+    <xs:enumeration value="genelge"/>
+    <xs:enumeration value="talimat"/>
+    <xs:enumeration value="yonerge"/>
+    <xs:enumeration value="diger"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="FormType"><xs:restriction base="xs:string">
+    <xs:enumeration value="mustakil"/>
+    <xs:enumeration value="cerceve"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="StageType"><xs:restriction base="xs:string">
+    <xs:enumeration value="taslak"/>
+    <xs:enumeration value="yayinlanmis"/>
+    <xs:enumeration value="konsolide"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="PublicationChannelType"><xs:restriction base="xs:string">
+    <xs:enumeration value="resmi-gazete"/>
+    <xs:enumeration value="kurumsal"/>
+    <xs:enumeration value="diger"/>
+    <xs:enumeration value="bilinmiyor"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="ArticleKindType"><xs:restriction base="xs:string">
+    <xs:enumeration value="normal"/>
+    <xs:enumeration value="ek"/>
+    <xs:enumeration value="gecici"/>
+    <xs:enumeration value="cerceve"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="ProvisionStatusType"><xs:restriction base="xs:string">
+    <xs:enumeration value="aktif"/>
+    <xs:enumeration value="mulga"/>
+    <xs:enumeration value="iptal"/>
+    <xs:enumeration value="degistirilmis"/>
+    <xs:enumeration value="taslak"/>
+  </xs:restriction></xs:simpleType>
+  <xs:simpleType name="AmendmentActionType"><xs:restriction base="xs:string">
+    <xs:enumeration value="degistir"/>
+    <xs:enumeration value="ekle"/>
+    <xs:enumeration value="kaldir"/>
+    <xs:enumeration value="ibare-degistir"/>
+    <xs:enumeration value="yeniden-duzenle"/>
+    <xs:enumeration value="diger"/>
+  </xs:restriction></xs:simpleType>
+
+  <xs:element name="legislation" type="tr:LegislationType"/>
+  <xs:complexType name="LegislationType">
+    <xs:sequence>
+      <xs:element name="metadata" type="tr:MetadataType"/>
+      <xs:element name="preamble" type="xs:string" minOccurs="0"/>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="book" type="tr:BookType"/>
+        <xs:element name="part" type="tr:PartType"/>
+        <xs:element name="chapter" type="tr:ChapterType"/>
+        <xs:element name="article" type="tr:ArticleType"/>
+        <xs:element name="segment" type="tr:SegmentType"/>
+      </xs:choice>
+      <xs:element name="annexes" type="tr:AnnexesType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="schemaVersion" type="tr:SchemaVersionType" use="required"/>
+    <xs:attribute name="code" type="tr:NonBlankType" use="required"/>
+    <xs:attribute name="language" type="xs:language" use="required"/>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="MetadataType">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string"/>
+      <xs:element name="shortTitle" type="xs:string"/>
+      <xs:element name="issuer" type="xs:string"/>
+      <xs:element name="source" type="tr:SourceType"/>
+      <xs:element name="file" type="tr:FileType"/>
+      <xs:element name="version" type="tr:VersionType"/>
+      <xs:element name="classification" type="tr:ClassificationType"/>
+      <xs:element name="legalBasis" type="xs:string" minOccurs="0"/>
+      <xs:element name="draftMaterials" type="tr:DraftMaterialsType" minOccurs="0"/>
+      <xs:element name="editorialNotes" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="SourceType">
+    <xs:attribute name="type" type="tr:NonBlankType" use="required"/>
+    <xs:attribute name="publicationDate" type="xs:date"/>
+    <xs:attribute name="number" type="xs:string"/>
+    <xs:attribute name="url" type="xs:anyURI"/>
+    <xs:attribute name="decisionNumber" type="xs:string"/>
+    <xs:attribute name="decisionDate" type="xs:date"/>
+  </xs:complexType>
+  <xs:complexType name="FileType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="sha256" type="xs:string" use="required"/>
+    <xs:attribute name="mimeType" type="xs:string"/>
+    <xs:attribute name="url" type="xs:anyURI"/>
+  </xs:complexType>
+  <xs:complexType name="VersionType">
+    <xs:attribute name="date" type="xs:string" use="required"/>
+    <xs:attribute name="mode" type="xs:string" use="required"/>
+    <xs:attribute name="effectiveDate" type="xs:date"/>
+    <xs:attribute name="validFrom" type="xs:date"/>
+    <xs:attribute name="validTo" type="xs:date"/>
+    <xs:attribute name="consolidationDate" type="xs:date"/>
+    <xs:attribute name="previousVersion" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="ClassificationType">
+    <xs:attribute name="kind" type="tr:DocumentKindType" use="required"/>
+    <xs:attribute name="form" type="tr:FormType" use="required"/>
+    <xs:attribute name="stage" type="tr:StageType" use="required"/>
+    <xs:attribute name="publicationChannel" type="tr:PublicationChannelType" use="required"/>
+    <xs:attribute name="budgetImpactExpected" type="xs:boolean"/>
+    <xs:attribute name="exemptionNote" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="DraftMaterialsType">
+    <xs:sequence>
+      <xs:element name="generalJustification" type="xs:string" minOccurs="0"/>
+      <xs:element name="articleJustification" type="tr:ArticleJustificationType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="opinionForm" type="tr:ResourceRefType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="opinionEvaluation" type="tr:ResourceRefType" minOccurs="0"/>
+      <xs:element name="comparisonTable" type="tr:ResourceRefType" minOccurs="0"/>
+      <xs:element name="impactAnalysis" type="tr:ResourceRefType" minOccurs="0"/>
+      <xs:element name="budgetImpactForm" type="tr:ResourceRefType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArticleJustificationType">
+    <xs:simpleContent><xs:extension base="xs:string">
+      <xs:attribute name="articleRef" type="xs:string" use="required"/>
+    </xs:extension></xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="ResourceRefType">
+    <xs:simpleContent><xs:extension base="xs:string">
+      <xs:attribute name="file" type="xs:string"/>
+      <xs:attribute name="url" type="xs:anyURI"/>
+      <xs:attribute name="sha256" type="xs:string"/>
+    </xs:extension></xs:simpleContent>
+  </xs:complexType>
+
+  <!-- Article 12: book > part > chapter > article. Lower levels may be omitted. -->
+  <xs:complexType name="BookType">
+    <xs:sequence><xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="part" type="tr:PartType"/>
+      <xs:element name="chapter" type="tr:ChapterType"/>
+      <xs:element name="article" type="tr:ArticleType"/>
+    </xs:choice></xs:sequence>
+    <xs:attributeGroup ref="tr:DivisionAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="PartType">
+    <xs:sequence><xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="chapter" type="tr:ChapterType"/>
+      <xs:element name="article" type="tr:ArticleType"/>
+    </xs:choice></xs:sequence>
+    <xs:attributeGroup ref="tr:DivisionAttributes"/>
+  </xs:complexType>
+  <xs:complexType name="ChapterType">
+    <xs:sequence><xs:choice minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="article" type="tr:ArticleType"/>
+      <xs:element name="segment" type="tr:SegmentType"/>
+    </xs:choice></xs:sequence>
+    <xs:attributeGroup ref="tr:DivisionAttributes"/>
+  </xs:complexType>
+  <xs:attributeGroup name="DivisionAttributes">
+    <xs:attribute name="number" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="ordinal" type="tr:NonBlankType" use="required"/>
+    <xs:attribute name="title" type="tr:NonBlankType" use="required"/>
+    <xs:attribute name="sourcePage" type="xs:positiveInteger"/>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+  </xs:attributeGroup>
+
+  <!-- Articles 13, 14, 16: MADDE, EK MADDE, GECICI MADDE and frame articles. -->
+  <xs:complexType name="ArticleType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="paragraph" type="tr:ParagraphType"/>
+        <xs:element name="amendment" type="tr:AmendmentType"/>
+      </xs:choice>
+      <xs:element name="explanation" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="number" type="tr:ArticleNumberType" use="required"/>
+    <xs:attribute name="temporary" type="xs:boolean"/>
+    <xs:attribute name="kind" type="tr:ArticleKindType" use="required"/>
+    <xs:attribute name="heading" type="xs:string"/>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="sourcePage" type="xs:positiveInteger"/>
+    <xs:attribute name="status" type="tr:ProvisionStatusType"/>
+    <xs:attribute name="effectiveDate" type="xs:date"/>
+  </xs:complexType>
+  <xs:complexType name="ParagraphType">
+    <xs:sequence>
+      <xs:element name="text" type="xs:string" minOccurs="0"/>
+      <xs:element name="item" type="tr:BentType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="closing" type="xs:string" minOccurs="0"/>
+      <xs:element name="references" type="tr:ReferencesType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="sourcePages" type="xs:string"/>
+    <xs:attribute name="number" type="xs:positiveInteger"/>
+    <xs:attribute name="status" type="tr:ProvisionStatusType"/>
+  </xs:complexType>
+  <xs:complexType name="BentType">
+    <xs:sequence>
+      <xs:element name="text" type="xs:string"/>
+      <xs:element name="item" type="tr:AltBentType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="closing" type="xs:string" minOccurs="0"/>
+      <xs:element name="references" type="tr:ReferencesType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="sourcePages" type="xs:string"/>
+    <xs:attribute name="level" type="xs:string" fixed="bent" use="required"/>
+    <xs:attribute name="label" type="tr:BentLabelType" use="required"/>
+    <xs:attribute name="status" type="tr:ProvisionStatusType"/>
+  </xs:complexType>
+  <xs:complexType name="AltBentType">
+    <xs:sequence><xs:element name="text" type="xs:string"/>
+      <xs:element name="closing" type="xs:string" minOccurs="0"/>
+      <xs:element name="references" type="tr:ReferencesType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="sourcePages" type="xs:string"/>
+    <xs:attribute name="level" type="xs:string" fixed="alt-bent" use="required"/>
+    <xs:attribute name="number" type="xs:positiveInteger" use="required"/>
+    <xs:attribute name="status" type="tr:ProvisionStatusType"/>
+  </xs:complexType>
+
+  <!-- Article 21: optional structured citations retain the original reference text. -->
+  <xs:complexType name="ReferencesType">
+    <xs:sequence><xs:element name="reference" type="tr:ReferenceType" maxOccurs="unbounded"/></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ReferenceType">
+    <xs:attribute name="rawText" type="tr:NonBlankType" use="required"/>
+    <xs:attribute name="targetCode" type="xs:string"/>
+    <xs:attribute name="targetDate" type="xs:date"/>
+    <xs:attribute name="targetNumber" type="xs:string"/>
+    <xs:attribute name="article" type="xs:string"/>
+    <xs:attribute name="paragraph" type="xs:string"/>
+    <xs:attribute name="bent" type="xs:string"/>
+    <xs:attribute name="altBent" type="xs:string"/>
+    <xs:attribute name="sentence" type="xs:positiveInteger"/>
+    <xs:attribute name="repealed" type="xs:boolean"/>
+  </xs:complexType>
+
+  <!-- Framework amendment: outer frame article has no heading/paragraph numbering. -->
+  <xs:complexType name="AmendmentType">
+    <xs:sequence>
+      <xs:element name="description" type="xs:string"/>
+      <xs:element name="target" type="tr:TargetType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="quotedProvision" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="action" type="tr:AmendmentActionType" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="TargetType">
+    <xs:attribute name="legislation" type="xs:string" use="required"/>
+    <xs:attribute name="article" type="xs:string"/>
+    <xs:attribute name="paragraph" type="xs:string"/>
+    <xs:attribute name="bent" type="xs:string"/>
+    <xs:attribute name="altBent" type="xs:string"/>
+    <xs:attribute name="sentence" type="xs:positiveInteger"/>
+  </xs:complexType>
+
+  <!-- Article 10(2): non-article subdivisions for general circulars/notices. -->
+  <xs:complexType name="SegmentType">
+    <xs:sequence>
+      <xs:element name="heading" type="xs:string" minOccurs="0"/>
+      <xs:element name="text" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="order" type="xs:positiveInteger"/>
+    <xs:attribute name="sourcePage" type="xs:positiveInteger"/>
+  </xs:complexType>
+
+  <!-- Annexes appear after the execution article, if any. Includes files/tables. -->
+  <xs:complexType name="AnnexesType">
+    <xs:sequence><xs:element name="annex" type="tr:AnnexType" maxOccurs="unbounded"/></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AnnexType">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string"/>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="text" type="xs:string"/>
+        <xs:element name="resource" type="tr:AnnexResourceType"/>
+        <xs:element name="table" type="tr:TableType"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="number" type="xs:string" use="required"/>
+    <xs:attribute name="sourcePage" type="xs:positiveInteger"/>
+  </xs:complexType>
+  <xs:complexType name="AnnexResourceType">
+    <xs:attribute name="file" type="xs:string" use="required"/>
+    <xs:attribute name="mimeType" type="xs:string"/>
+    <xs:attribute name="sha256" type="xs:string"/>
+    <xs:attribute name="url" type="xs:anyURI"/>
+  </xs:complexType>
+  <xs:complexType name="TableType">
+    <xs:sequence><xs:element name="row" type="tr:TableRowType" maxOccurs="unbounded"/></xs:sequence>
+    <xs:attribute name="caption" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="TableRowType">
+    <xs:sequence><xs:element name="cell" type="xs:string" maxOccurs="unbounded"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
