@@ -1,45 +1,38 @@
-# Havacilik Mevzuati Hub v3.10.1 - Tum butonlar/menuler tepkisiz hatasi
+# Havacılık Mevzuatı Hub v3.10.2 — Fıkra / Bent / Alt Bent Notları
 
-## Tespit
+## Kapsam
 
-v3.10 acilis kodu, yeni `src/tr-import-ui.js` dosyasini **ana tiklama olaylari baglanmadan once** cagiriyordu. Bu dosya GitHub Pages'te eksikse, yanlis klasordeyse veya yuklenemezse `ReferenceError: EasaTrImportUI is not defined` olusuyor, ana JS calismayi durduruyor, sayfa gorunmesine ragmen butonlar tepkisiz kaliyordu. Bu durum tarayicida dosyayi bilerek eksilterek birebir yeniden olusturuldu.
+Mevcut v3.10.1 üzerine kuruludur. Mevcut Google Drive ve Firebase dosyalarına müdahale etmeden Türkiye mevzuatı için daha erişilebilir, ayrı not alma kontrolleri sunar.
 
-v3.10.1, tum menulerin olaylarini oncelikle baglar. Word/PDF modulu eksikse yalnizca bu aktarim devre disi kalir ve hangi dosyanin eksik oldugunu uygulama gosterir. Normal yuklemede v3.10 Word/PDF ozelligi korunur.
+- Fıkra `(1)`, bent `a)` ve alt bent `1)` için ayrı, görünür **Not ekle / Notu düzenle** düğmeleri.
+- İlgili maddenin altında genişletilebilir **Fıkra, bent ve alt bent notları** rehberi; her satır ilgili not editörünü açar.
+- Not editöründe tam kimlik yolu görünür: `(1) › s) › 2)`.
+- Notlar eskisi gibi Firestore'da ilgili maddenin `subnotes` alanında saklanır. Yeni koleksiyon, güvenlik kuralı veya veri taşıma işlemi gerekmez.
+- Önceden kaydedilmiş madde / fıkra notları, yer imleri, XML sürümleri ve TR–EASA eşleştirmeleri korunur.
+- Note editöründeki kaynak metin parmak izi yeni sürümlerde değişiklik uyarısı için kullanılmaya devam eder.
+- Word, PDF, Kindle ve EPUB dışa aktarma motorları değiştirilmemiştir; mevcut `subnotes` alanını kullanmaya devam eder.
 
-## GitHub Pages guncellemesi
+## Kurulum
 
-ZIP arsinindeki **6 dosyanin tamamini**, asagidaki ayni konumlara yukleyin (ZIP'i tek dosya olarak yuklemeyin):
+`HUB_v3_10_2_fix.zip` arşivindeki **üç** dosyayı GitHub deposunun birebir aynı yollarına yükleyip üzerine yazın:
 
-- `index.html` - degistir
-- `src/app.js` - degistir
-- `src/cloud.js` - v3.10 ile ayni, eksikse tamamla
-- `src/style.css` - v3.10 ile ayni, eksikse tamamla
-- `src/tr-document-import.js` - **mutlaka src klasorunde bulunsun**
-- `src/tr-import-ui.js` - **mutlaka src klasorunde bulunsun**
+- `index.html`
+- `src/app.js`
+- `src/style.css`
 
-Mevcut `config.js`, `firestore.rules`, Google Drive, Firestore ve XML kayitlarina kesinlikle dokunmayin. Bu islem herhangi bir bulut kaydini degistirmez.
+Diğer dosyaları silmeyin. Özellikle `config.js`, `src/tr-parser.js`, `src/mappings-ui.js`, `src/cloud.js`, `src/clauses.js`, `src/tr-import-ui.js` ve `src/tr-document-import.js` **aynen korunmalıdır**.
 
-GitHub Pages adresinde su yollarin calistigini dogrulayin (repo base path'i varsa onu koruyun):
+Ardından GitHub Pages sayfasını `Ctrl + Shift + R` ile önbelleksiz yenileyin. Mobil cihazda site verisi eski kalırsa sayfayı yeniden yükleyin.
 
-- `.../src/tr-document-import.js?v=3.10.1`
-- `.../src/tr-import-ui.js?v=3.10.1`
+## Kullanım
 
-Bu adreslerde 404 sayfasi degil JS kodu gorunmeli. Repo GitHub Pages'i bir alt klasorden yayinliyorsa **o klasorde** dosyalari guncelleyin.
+1. Kütüphaneden `SHY-OLAY` → `MADDE 4` açın.
+2. `(1)` fıkrası, `s)` bendi veya onun altındaki `2)` alt bendinin yanındaki **Not ekle** düğmesine tıklayın.
+3. İsterseniz metnin altındaki **Fıkra, bent ve alt bent notları** başlığını açıp `(1) › s) › 2)` satırından ilgili editöre geçin.
+4. Notu yazıp **Kaydet**'e basın. Aynı maddedeki diğer notlar ve genel madde notu ayrı ayrı korunur.
 
-Degisiklikler yayinlandiktan sonra bilgisayarda `Ctrl+Shift+R` yapin; telefonda sekmeyi tamamen kapatip tekrar acin. v3.10.1 bilgisinin gorunmesini kontrol edin.
+## Teknik kontrol
 
-## Testler
+Kaynak olarak yüklenmiş SHY-OLAY XML'i ile **MADDE 4** test edilmiştir: 2 fıkra, 30 bent, 3 alt bent; 35 ayrı not hedefi. Node.js kod doğrulaması ve ayrı seviyelere not kaydetme/önceden mevcut fıkra notunu koruma testleri başarılıdır.
 
-Chromium ortaminda asagidaki senaryolar uygulandi:
-
-- Tam paket: kütüphane, arama, hesap ekranlari arasi buton gecisleri calisti.
-- DOCX: SHY-OLAY icin 4 bolum, 30 madde, 88 fikra, 59 bent, 3 alt bentli kontrol penceresi acildi.
-- `src/tr-import-ui.js` eksik: butonlar ve menuler calismaya devam etti; eksik dosya uyarisi gorundu.
-- `src/tr-document-import.js` eksik: ayni bicimde ana ekran calisiyor, Word/PDF aktarimi kontrollu hata veriyor.
-- `src/app.js` yuklenmezse ekranda genel baslatma tanisi gorunuyor.
-
-Bu testler simulasyon ortaminda yapilmistir; gercek Firebase veya Google Drive hesabina baglanilmamistir.
-
-## Hata halen devam ediyorsa
-
-Uygulamanin alt saginda gorunen **Uygulama dosyasi kontrolu** mesaji varsa tam metnini paylasin. Yoksa Chrome DevTools > Console ekranindaki ilk kirmizi hata satirini paylasin (API anahtari/tokenlari gondermeyin).
+**Sınır:** Gerçek Firebase/Drive hesabında otomatik canlı test yapılmamıştır. Bu çalışma ortamındaki Chromium, yönetim politikasıyla yerel sayfaları açmayı engellediği için gerçek tarayıcı üzerinde görsel uçtan uca test gerçekleştirilememiştir. GitHub Pages dağıtımında ilk kontrol kullanıcı ortamında yapılmalıdır.
