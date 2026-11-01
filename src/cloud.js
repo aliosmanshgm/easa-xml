@@ -148,6 +148,57 @@
       });
     }catch(e){throw firestoreError(e);}
   }
+  // v3.11.2 - cross-jurisdiction temporal provision events. All records are
+  // user-owned Firestore metadata; legal XML, source PDFs and annotations remain
+  // unchanged. Optimistic revisions prevent silent concurrent overwrites.
+  async function listTemporalEvents() {
+    ensureLogin();
+    try {
+      const snap=await modules.fs.getDocs(coll('temporalEvents'));
+      return snap.docs.map(x=>({...x.data(),id:x.id}));
+    } catch(e){throw firestoreError(e);}
+  }
+  async function saveTemporalEvent(event,expectedRevision=0){
+    ensureLogin();
+    if(!global.EasaTemporal?.validate)throw Error('Mevzuat takvimi doğrulama dosyası yüklenmedi.');
+    global.EasaTemporal.validate(event);
+    const allowed=['id','familyId','versionId','recordKey','anchor','scope','type','date','basis','baseDate','period','unit','reference','sourceExcerpt','expression','status','note','targetDescription','legalChangeRef'];
+    const clean=Object.fromEntries(allowed.map(k=>[k,event[k]??(k==='period'?0:'')]));
+    const payloadBytes=new TextEncoder().encode(JSON.stringify(clean)).byteLength;
+    if(payloadBytes>16*1024)throw Error('Takvim kaydı çok uzun. Kaynak metni kısaltın.');
+    try {
+      return await modules.fs.runTransaction(firestore,async tx=>{
+        const releaseRef=doc('releases',await sha256(clean.versionId));
+        const r=await tx.get(releaseRef);
+        if(!r.exists()||r.data().versionId!==clean.versionId||r.data().familyId!==clean.familyId)
+          throw Error('Takvim kaydının bağlı olduğu mevzuat sürümü bulut kataloğunda bulunamadı.');
+        const ref=doc('temporalEvents',clean.id),oldSnap=await tx.get(ref);
+        const old=oldSnap.exists()?oldSnap.data():null,revision=Number(old?.revision)||0;
+        if(revision!==Number(expectedRevision||0)){
+          const err=Error('Bu tarih kaydı başka cihazda değiştirilmiş veya silinmiş. Buluttan yenileyip tekrar kontrol edin.');
+          err.code='EASA_TEMPORAL_CONFLICT';throw err;
+        }
+        const now=new Date().toISOString();
+        const next={...clean,schema:1,revision:revision+1,createdAt:old?.createdAt||now,updatedAt:now};
+        tx.set(ref,next);return next;
+      });
+    } catch(e){throw firestoreError(e);}
+  }
+  async function deleteTemporalEvent(id,expectedRevision=0){
+    ensureLogin();
+    if(!/^tim_[a-zA-Z0-9_-]{20,90}$/.test(String(id||'')))throw Error('Takvim kaydı kimliği geçersiz.');
+    try {
+      await modules.fs.runTransaction(firestore,async tx=>{
+        const ref=doc('temporalEvents',id),snap=await tx.get(ref);
+        if(!snap.exists())throw Error('Takvim kaydı daha önce silinmiş.');
+        if(Number(snap.data().revision||0)!==Number(expectedRevision||0)){
+          const err=Error('Takvim kaydı başka bir cihazda güncellenmiş. Silinmeden önce yenileyin.');
+          err.code='EASA_TEMPORAL_CONFLICT';throw err;
+        }
+        tx.delete(ref);
+      });
+    }catch(e){throw firestoreError(e);}
+  }
   async function listAnnotations() {
     try {const snapshot = await modules.fs.getDocs(coll('annotations'));return snapshot.docs.map(x=>x.data());}
     catch(e) {throw firestoreError(e);}
@@ -480,5 +531,5 @@
   async function getFolderUrl() {
     ensureLogin();const d=await modules.fs.getDoc(doc('settings','driveFolder'));return folderUrl(d.data()?.rootId);
   }
-  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,saveReleaseDates,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,listMappings,saveMapping,deleteMapping,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
+  global.EasaCloud={init,configured,user,driveReady,signIn,signOut,listReleases,saveReleaseDates,listTemporalEvents,saveTemporalEvent,deleteTemporalEvent,listAnnotations,listActive,saveActive,saveAnnotation,listPublicationDrafts,savePublicationDraft,deletePublicationDraft,listMappings,saveMapping,deleteMapping,sha256,uploadVersion,reindexVersion,getFile,getXmlFile,removeVersion,getOrCreateFolders,getFolderUrl};
 })(window);
